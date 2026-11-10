@@ -15,7 +15,7 @@ label,.k{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#7aa}
 input[type=text]{width:100%;background:#000;color:#00f0ff;border:1px solid #ff2bd6;padding:8px;font:inherit}
 button{background:#000;color:#00f0ff;border:1px solid #00f0ff;padding:8px 12px;font:inherit;letter-spacing:1px;cursor:pointer}
 button.on{background:#00f0ff;color:#000}
-.seg{display:flex;gap:8px;margin:4px 0 12px}.seg button{flex:1}
+.seg{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px}.seg button{flex:1 1 28%;min-width:0}
 #res button{display:block;width:100%;text-align:left;margin-top:6px;border-color:#ff2bd6;color:#cfe}
 input[type=range]{width:100%;accent-color:#ff2bd6}
 a{color:#fcee0a}
