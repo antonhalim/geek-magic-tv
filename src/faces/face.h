@@ -13,6 +13,8 @@ struct FaceState {
   int humidity;
   char unit;
   const char* label;
+  const char* outlook;  // today's tag: STORM, SNOW, RAIN, DRY
+  char precip[24];      // "58% TODAY // 0.29in"
   bool weatherValid;
   bool stale;
   int second;
@@ -31,6 +33,7 @@ class Face {
 
 Face* faceNetrunner();
 Face* faceTerminal();
+Face* faceVitals();
 
 // ---- shared helpers (common.cpp) ----
 

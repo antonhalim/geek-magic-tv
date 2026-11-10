@@ -50,7 +50,7 @@ bool parseSettingsOver(const char* json, const Settings& base, Settings& out) {
 
   if (doc["face"].is<int>()) {
     int f = doc["face"];
-    if (f >= 0 && f <= 1) out.face = static_cast<uint8_t>(f);
+    if (f >= 0 && f <= 2) out.face = static_cast<uint8_t>(f);
   }
   if (doc["brightness"].is<int>()) {
     int b = doc["brightness"];
@@ -102,6 +102,9 @@ bool parseWeather(const char* json, WeatherData& out) {
   w.hiC = doc["daily"]["temperature_2m_max"][0] | w.tempC;
   w.loC = doc["daily"]["temperature_2m_min"][0] | w.tempC;
   w.utcOffset = doc["utc_offset_seconds"] | 0L;
+  w.dayCode = doc["daily"]["weather_code"][0] | w.code;
+  w.precipProb = doc["daily"]["precipitation_probability_max"][0] | -1;
+  w.precipMm = doc["daily"]["precipitation_sum"][0] | 0.0f;
   w.valid = true;
   out = w;
   return true;
@@ -213,4 +216,22 @@ uint8_t effectiveBrightness(const Settings& s, int hour, bool synced) {
                    ? (hour >= s.nightStart && hour < s.nightEnd)   // e.g. 01 -> 05
                    : (hour >= s.nightStart || hour < s.nightEnd);  // wraps midnight
   return night ? s.nightBrightness : s.brightness;
+}
+
+const char* dayOutlook(int dayCode, int precipProb, float precipMm) {
+  if (dayCode >= 95) return "STORM";
+  if ((dayCode >= 71 && dayCode <= 77) || dayCode == 85 || dayCode == 86) return "SNOW";
+  bool wetCode = (dayCode >= 51 && dayCode <= 67) || (dayCode >= 80 && dayCode <= 82);
+  if (wetCode || precipProb >= 50 || precipMm >= 1.0f) return "RAIN";
+  return "DRY";
+}
+
+void formatPrecip(int precipProb, float precipMm, char unit, char* out, size_t len) {
+  if (precipProb < 0) {
+    snprintf(out, len, "-- TODAY");
+  } else if (unit == 'F') {
+    snprintf(out, len, "%d%% TODAY // %.2fin", precipProb, precipMm / 25.4f);
+  } else {
+    snprintf(out, len, "%d%% TODAY // %.1fmm", precipProb, precipMm);
+  }
 }

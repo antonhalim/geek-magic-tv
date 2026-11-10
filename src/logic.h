@@ -22,6 +22,9 @@ struct WeatherData {
   int humidity;
   int code;
   long utcOffset;
+  int dayCode;      // today's dominant WMO code
+  int precipProb;   // today's max rain chance %, -1 if unknown
+  float precipMm;   // today's expected total
   bool valid;
 };
 
@@ -41,6 +44,10 @@ bool parseWeather(const char* json, WeatherData& out);
 int parseGeocode(const char* json, GeoResult* out, int max);
 int toDisplayTemp(float c, char unit);
 const char* wmoLabel(int code);
+// Today's outlook tag: STORM, SNOW, RAIN or DRY.
+const char* dayOutlook(int dayCode, int precipProb, float precipMm);
+// e.g. "58% TODAY // 7.3mm" (C) or "58% TODAY // 0.29in" (F).
+void formatPrecip(int precipProb, float precipMm, char unit, char* out, size_t len);
 void formatTime(int h, int m, char* out);
 void formatDate(int wday, int mday, int mon, int year, char* out);
 void urlEncode(const char* in, char* out, size_t len);

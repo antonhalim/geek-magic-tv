@@ -18,11 +18,12 @@ static long appliedOffset = 0;
 static bool offsetApplied = false;
 
 static bool fetchWeather() {
-  char url[256];
+  char url[320];  // ~265 chars with the daily outlook fields
   snprintf(url, sizeof(url),
            "http://api.open-meteo.com/v1/forecast?latitude=%.4f&longitude=%.4f"
            "&current=temperature_2m,relative_humidity_2m,weather_code"
-           "&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1",
+           "&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max,precipitation_sum"
+           "&timezone=auto&forecast_days=1",
            settings.lat, settings.lon);
   WiFiClient client;
   HTTPClient http;

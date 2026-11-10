@@ -95,6 +95,48 @@ void test_parse_weather() {
   TEST_ASSERT_TRUE(w.valid);
 }
 
+
+void test_parse_weather_day() {
+  WeatherData w = {};
+  TEST_ASSERT_TRUE(parseWeather(FORECAST_DAY_JSON, w));
+  TEST_ASSERT_EQUAL_INT(61, w.dayCode);
+  TEST_ASSERT_EQUAL_INT(58, w.precipProb);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 7.3f, w.precipMm);
+  TEST_ASSERT_TRUE(parseWeather(FORECAST_JSON, w));  // older response without daily extras
+  TEST_ASSERT_EQUAL_INT(2, w.dayCode);               // falls back to current code
+  TEST_ASSERT_EQUAL_INT(-1, w.precipProb);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, w.precipMm);
+}
+
+void test_face_vitals() {
+  Settings s;
+  TEST_ASSERT_TRUE(parseSettings("{\"face\":2}", s));
+  TEST_ASSERT_EQUAL(2, s.face);
+  TEST_ASSERT_TRUE(parseSettings("{\"face\":3}", s));
+  TEST_ASSERT_EQUAL(0, s.face);
+}
+
+void test_day_outlook() {
+  TEST_ASSERT_EQUAL_STRING("STORM", dayOutlook(95, 10, 0));
+  TEST_ASSERT_EQUAL_STRING("SNOW", dayOutlook(71, 40, 2));
+  TEST_ASSERT_EQUAL_STRING("RAIN", dayOutlook(61, 58, 7.3f));
+  TEST_ASSERT_EQUAL_STRING("RAIN", dayOutlook(51, 30, 0.2f));  // drizzle
+  TEST_ASSERT_EQUAL_STRING("RAIN", dayOutlook(3, 70, 0));      // likely rain
+  TEST_ASSERT_EQUAL_STRING("RAIN", dayOutlook(3, 20, 1.5f));   // measurable rain
+  TEST_ASSERT_EQUAL_STRING("DRY", dayOutlook(2, 10, 0));
+  TEST_ASSERT_EQUAL_STRING("DRY", dayOutlook(0, -1, 0));
+}
+
+void test_format_precip() {
+  char out[32];
+  formatPrecip(58, 7.3f, 'C', out, sizeof(out));
+  TEST_ASSERT_EQUAL_STRING("58% TODAY // 7.3mm", out);
+  formatPrecip(58, 7.3f, 'F', out, sizeof(out));
+  TEST_ASSERT_EQUAL_STRING("58% TODAY // 0.29in", out);
+  formatPrecip(-1, 0, 'F', out, sizeof(out));
+  TEST_ASSERT_EQUAL_STRING("-- TODAY", out);
+}
+
 void test_parse_weather_bad() {
   WeatherData w = {};
   w.tempC = 5;
@@ -223,6 +265,10 @@ int main() {
   RUN_TEST(test_format);
   RUN_TEST(test_parse_weather);
   RUN_TEST(test_parse_weather_bad);
+  RUN_TEST(test_parse_weather_day);
+  RUN_TEST(test_face_vitals);
+  RUN_TEST(test_day_outlook);
+  RUN_TEST(test_format_precip);
   RUN_TEST(test_geocode);
   RUN_TEST(test_url_encode);
   RUN_TEST(test_truncate);
