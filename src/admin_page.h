@@ -19,6 +19,7 @@ button.on{background:#00f0ff;color:#000}
 #res button{display:block;width:100%;text-align:left;margin-top:6px;border-color:#ff2bd6;color:#cfe}
 input[type=range]{width:100%;accent-color:#ff2bd6}
 a{color:#fcee0a}
+select{background:#000;color:#00f0ff;border:1px solid #00f0ff;font:inherit;padding:4px;margin:0 4px}
 p{margin:8px 0 0;font-size:12px;color:#7aa}
 </style></head><body>
 <h1>CYBERCLOCK</h1>
@@ -33,14 +34,24 @@ p{margin:8px 0 0;font-size:12px;color:#7aa}
 <div class="k">Face</div><div class="seg" id="face"><button data-v="0">NETRUNNER</button><button data-v="1">TERMINAL</button></div>
 <div class="k">Brightness <span class="v" id="bv"></span></div>
 <input type="range" id="br" min="0" max="100"></section>
+<section><h2>Night mode</h2>
+<div class="seg" id="nightOn"><button data-v="1">ON</button><button data-v="0">OFF</button></div>
+<div class="k">From<select id="ns"></select>to<select id="ne"></select></div>
+<div class="k" style="margin-top:12px">Night brightness <span class="v" id="nbv"></span></div>
+<input type="range" id="nbr" min="0" max="100"></section>
 <section><h2>Firmware</h2><a href="/update">/update</a>
 <p>To revert to stock, upload GeekMagic's official SmallTV-Ultra firmware .bin</p></section>
 <script>
-const $=id=>document.getElementById(id);let t;
+const $=id=>document.getElementById(id);let t,t2;
+for(const id of['ns','ne'])for(let h=0;h<24;h++)$(id).add(new Option(String(h).padStart(2,'0')+':00',h));
 const post=o=>fetch('/api/config',{method:'POST',body:JSON.stringify(o)}).then(r=>{if(!r.ok)throw 0;return r.json()}).then(show).catch(()=>fetch('/api/config').then(r=>r.json()).then(show));
 function mark(id,v){for(const b of $(id).children)b.classList.toggle('on',b.dataset.v==v)}
-function show(c){$('city').textContent=c.city;mark('unit',c.unit);mark('face',c.face);if(document.activeElement!==$('br')&&!t)$('br').value=c.brightness;$('bv').textContent=c.brightness}
+function show(c){$('city').textContent=c.city;mark('unit',c.unit);mark('face',c.face);if(document.activeElement!==$('br')&&!t)$('br').value=c.brightness;$('bv').textContent=c.brightness;
+mark('nightOn',c.nightOn?1:0);$('ns').value=c.nightStart;$('ne').value=c.nightEnd;if(document.activeElement!==$('nbr')&&!t2)$('nbr').value=c.nightBrightness;$('nbv').textContent=c.nightBrightness}
 for(const id of['unit','face'])$(id).onclick=e=>{const v=e.target.dataset.v;if(v!=null)post({[id]:id=='face'?+v:v})};
+$('nightOn').onclick=e=>{const v=e.target.dataset.v;if(v!=null)post({nightOn:v=='1'})};
+$('ns').onchange=e=>post({nightStart:+e.target.value});$('ne').onchange=e=>post({nightEnd:+e.target.value});
+$('nbr').oninput=e=>{$('nbv').textContent=e.target.value;clearTimeout(t2);t2=setTimeout(()=>{t2=0;post({nightBrightness:+e.target.value})},300)};
 $('br').oninput=e=>{$('bv').textContent=e.target.value;clearTimeout(t);t=setTimeout(()=>{t=0;post({brightness:+e.target.value})},300)};
 const ab=s=>Object.fromEntries(s.split(',').map(p=>p.split(':')));
 const US=ab('Alabama:AL,Alaska:AK,Arizona:AZ,Arkansas:AR,California:CA,Colorado:CO,Connecticut:CT,Delaware:DE,District of Columbia:DC,Florida:FL,Georgia:GA,Hawaii:HI,Idaho:ID,Illinois:IL,Indiana:IN,Iowa:IA,Kansas:KS,Kentucky:KY,Louisiana:LA,Maine:ME,Maryland:MD,Massachusetts:MA,Michigan:MI,Minnesota:MN,Mississippi:MS,Missouri:MO,Montana:MT,Nebraska:NE,Nevada:NV,New Hampshire:NH,New Jersey:NJ,New Mexico:NM,New York:NY,North Carolina:NC,North Dakota:ND,Ohio:OH,Oklahoma:OK,Oregon:OR,Pennsylvania:PA,Rhode Island:RI,South Carolina:SC,South Dakota:SD,Tennessee:TN,Texas:TX,Utah:UT,Vermont:VT,Virginia:VA,Washington:WA,West Virginia:WV,Wisconsin:WI,Wyoming:WY,Puerto Rico:PR');

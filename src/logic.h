@@ -9,6 +9,10 @@ struct Settings {
   char unit;  // 'C' or 'F'
   uint8_t face;
   uint8_t brightness;
+  bool nightOn;
+  uint8_t nightStart;  // hour 0-23, night begins
+  uint8_t nightEnd;    // hour 0-23, day resumes
+  uint8_t nightBrightness;
 };
 
 struct WeatherData {
@@ -40,6 +44,8 @@ const char* wmoLabel(int code);
 void formatTime(int h, int m, char* out);
 void formatDate(int wday, int mday, int mon, int year, char* out);
 void urlEncode(const char* in, char* out, size_t len);
+// Brightness for this local hour; day brightness until the clock is synced.
+uint8_t effectiveBrightness(const Settings& s, int hour, bool synced);
 void truncateUpper(const char* in, char* out, size_t maxChars);
 // Fits "NAME, REGION" into maxW px: full text, else NAME, else NAME cut with "...".
 void fitLabel(const char* in, char* out, size_t len, int maxW, int (*width)(const char*));

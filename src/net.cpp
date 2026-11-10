@@ -67,10 +67,8 @@ static void handleConfigPost() {
   bool locChanged = fabsf(next.lat - settings.lat) > 1e-4f || fabsf(next.lon - settings.lon) > 1e-4f;
   bool faceChanged = locChanged || next.face != settings.face || next.unit != settings.unit ||
                      strcmp(next.city, settings.city) != 0;
-  bool brightChanged = next.brightness != settings.brightness;
   settings = next;
   configSave();
-  if (brightChanged) setBrightness(settings.brightness);
   if (faceChanged) faceDirty = true;
   if (locChanged) weatherRequestRefresh();
   sendConfig();

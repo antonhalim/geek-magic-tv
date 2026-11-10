@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <string.h>
+#include <time.h>
 #include "config.h"
 #include "display.h"
 #include "faces/face.h"
@@ -11,12 +12,29 @@ static FaceState cur;
 static FaceState prev;
 static uint32_t lastStateAt = 0;
 static uint32_t lastTickAt = 0;
+static uint8_t appliedBrightness = 255;
+
+// Day or night brightness for the current local hour; only touches the PWM on change.
+static void applyBrightness() {
+  int hour = 12;
+  if (timeSynced()) {
+    time_t now = time(nullptr);
+    struct tm t;
+    localtime_r(&now, &t);
+    hour = t.tm_hour;
+  }
+  uint8_t want = effectiveBrightness(settings, hour, timeSynced());
+  if (want != appliedBrightness) {
+    setBrightness(want);
+    appliedBrightness = want;
+  }
+}
 
 void setup() {
   displayBegin();
   configLoad();
   showSplash();
-  setBrightness(settings.brightness);  // showSplash forces 60 %
+  applyBrightness();  // showSplash forces 60 %
   timeSprite();  // allocate the 10 KB sprite early, before the heap fragments
   netBegin();
   weatherRequestRefresh();
@@ -41,6 +59,7 @@ void loop() {
 
   if (now - lastStateAt >= 50) {  // 50 ms so seconds roll over on time
     lastStateAt = now;
+    applyBrightness();
     buildFaceState(cur);
     if (memcmp(&cur, &prev, sizeof(cur)) != 0) {
       face->update(cur, prev);

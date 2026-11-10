@@ -126,6 +126,50 @@ void test_truncate() {
   TEST_ASSERT_EQUAL_STRING("LLANFAIRPW", out);
 }
 
+
+void test_night_defaults() {
+  Settings s = defaultSettings();
+  TEST_ASSERT_TRUE(s.nightOn);
+  TEST_ASSERT_EQUAL(23, s.nightStart);
+  TEST_ASSERT_EQUAL(7, s.nightEnd);
+  TEST_ASSERT_EQUAL(15, s.nightBrightness);
+}
+
+void test_night_parse() {
+  Settings s;
+  TEST_ASSERT_TRUE(parseSettings("{\"nightOn\":false,\"nightStart\":21,\"nightEnd\":6,\"nightBrightness\":0}", s));
+  TEST_ASSERT_FALSE(s.nightOn);
+  TEST_ASSERT_EQUAL(21, s.nightStart);
+  TEST_ASSERT_EQUAL(6, s.nightEnd);
+  TEST_ASSERT_EQUAL(0, s.nightBrightness);
+  Settings base = defaultSettings();
+  TEST_ASSERT_TRUE(parseSettingsOver("{\"nightStart\":24,\"nightEnd\":-1,\"nightBrightness\":300}", base, s));
+  TEST_ASSERT_EQUAL(23, s.nightStart);  // out of range keeps base
+  TEST_ASSERT_EQUAL(7, s.nightEnd);
+  TEST_ASSERT_EQUAL(100, s.nightBrightness);  // clamped
+  char buf[256];
+  TEST_ASSERT_TRUE(serializeSettings(defaultSettings(), buf, sizeof(buf)) > 0);
+  TEST_ASSERT_TRUE(parseSettings(buf, s));
+  TEST_ASSERT_EQUAL(15, s.nightBrightness);
+}
+
+void test_effective_brightness() {
+  Settings s = defaultSettings();  // 80 day, 15 night, 23 -> 7
+  TEST_ASSERT_EQUAL(15, effectiveBrightness(s, 23, true));
+  TEST_ASSERT_EQUAL(15, effectiveBrightness(s, 3, true));
+  TEST_ASSERT_EQUAL(80, effectiveBrightness(s, 7, true));   // end hour is day
+  TEST_ASSERT_EQUAL(80, effectiveBrightness(s, 22, true));
+  TEST_ASSERT_EQUAL(80, effectiveBrightness(s, 3, false));  // unsynced -> day
+  s.nightStart = 1; s.nightEnd = 5;                          // same-day window
+  TEST_ASSERT_EQUAL(15, effectiveBrightness(s, 1, true));
+  TEST_ASSERT_EQUAL(80, effectiveBrightness(s, 5, true));
+  TEST_ASSERT_EQUAL(80, effectiveBrightness(s, 0, true));
+  s.nightStart = 7; s.nightEnd = 7;                          // empty window
+  TEST_ASSERT_EQUAL(80, effectiveBrightness(s, 7, true));
+  s.nightStart = 23; s.nightEnd = 7; s.nightOn = false;
+  TEST_ASSERT_EQUAL(80, effectiveBrightness(s, 3, true));
+}
+
 static int w8(const char* s) { return (int)strlen(s) * 8; }
 
 void test_fit_label() {
@@ -183,5 +227,8 @@ int main() {
   RUN_TEST(test_url_encode);
   RUN_TEST(test_truncate);
   RUN_TEST(test_fit_label);
+  RUN_TEST(test_night_defaults);
+  RUN_TEST(test_night_parse);
+  RUN_TEST(test_effective_brightness);
   return UNITY_END();
 }

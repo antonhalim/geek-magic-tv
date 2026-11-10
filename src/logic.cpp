@@ -18,6 +18,10 @@ Settings defaultSettings() {
   s.unit = 'F';
   s.face = 0;
   s.brightness = 80;
+  s.nightOn = true;
+  s.nightStart = 23;
+  s.nightEnd = 7;
+  s.nightBrightness = 15;
   return s;
 }
 
@@ -52,6 +56,19 @@ bool parseSettingsOver(const char* json, const Settings& base, Settings& out) {
     int b = doc["brightness"];
     out.brightness = static_cast<uint8_t>(b < 0 ? 0 : (b > 100 ? 100 : b));
   }
+  if (doc["nightOn"].is<bool>()) out.nightOn = doc["nightOn"];
+  if (doc["nightStart"].is<int>()) {
+    int h = doc["nightStart"];
+    if (h >= 0 && h <= 23) out.nightStart = static_cast<uint8_t>(h);
+  }
+  if (doc["nightEnd"].is<int>()) {
+    int h = doc["nightEnd"];
+    if (h >= 0 && h <= 23) out.nightEnd = static_cast<uint8_t>(h);
+  }
+  if (doc["nightBrightness"].is<int>()) {
+    int b = doc["nightBrightness"];
+    out.nightBrightness = static_cast<uint8_t>(b < 0 ? 0 : (b > 100 ? 100 : b));
+  }
   return true;
 }
 
@@ -64,6 +81,10 @@ size_t serializeSettings(const Settings& s, char* buf, size_t len) {
   doc["unit"] = unit;
   doc["face"] = s.face;
   doc["brightness"] = s.brightness;
+  doc["nightOn"] = s.nightOn;
+  doc["nightStart"] = s.nightStart;
+  doc["nightEnd"] = s.nightEnd;
+  doc["nightBrightness"] = s.nightBrightness;
   if (measureJson(doc) >= len) return 0;
   return serializeJson(doc, buf, len);
 }
@@ -184,4 +205,12 @@ void fitLabel(const char* in, char* out, size_t len, int maxW, int (*width)(cons
       return;
     }
   }
+}
+
+uint8_t effectiveBrightness(const Settings& s, int hour, bool synced) {
+  if (!synced || !s.nightOn || s.nightStart == s.nightEnd) return s.brightness;
+  bool night = (s.nightStart < s.nightEnd)
+                   ? (hour >= s.nightStart && hour < s.nightEnd)   // e.g. 01 -> 05
+                   : (hour >= s.nightStart || hour < s.nightEnd);  // wraps midnight
+  return night ? s.nightBrightness : s.brightness;
 }
