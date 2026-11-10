@@ -54,6 +54,12 @@ void formatPrecip(int precipProb, float precipMm, char unit, char* out, size_t l
 const char* windCompass(int deg);
 // "WIND SE 9mph" (F) / "WIND SE 14km/h" (C), "WIND --" if unknown.
 void formatWind(float kmh, int deg, char unit, char* out, size_t len);
+// Military time zone letter for a UTC offset: Z, A-M (east, no J), N-Y (west); J if not whole hours.
+char militaryZone(long offsetSec);
+// "UTC-8", "UTC+5:30", "UTC".
+void formatUtcOffset(long offsetSec, char* out, size_t len);
+// Date-time group, e.g. "DTG 101418U NOV 26" (mon0 is 0-based).
+void formatDtg(int mday, int hour, int min, char zone, int mon0, int year, char* out, size_t len);
 void formatTime(int h, int m, char* out);
 void formatDate(int wday, int mday, int mon, int year, char* out);
 void urlEncode(const char* in, char* out, size_t len);

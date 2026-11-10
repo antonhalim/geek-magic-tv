@@ -163,6 +163,28 @@ void test_wind() {
   TEST_ASSERT_EQUAL_STRING("WIND --", out);
 }
 
+
+void test_military_time() {
+  TEST_ASSERT_EQUAL('Z', militaryZone(0));
+  TEST_ASSERT_EQUAL('U', militaryZone(-8 * 3600));
+  TEST_ASSERT_EQUAL('A', militaryZone(3600));
+  TEST_ASSERT_EQUAL('I', militaryZone(9 * 3600));
+  TEST_ASSERT_EQUAL('K', militaryZone(10 * 3600));  // J is skipped
+  TEST_ASSERT_EQUAL('M', militaryZone(12 * 3600));
+  TEST_ASSERT_EQUAL('N', militaryZone(-3600));
+  TEST_ASSERT_EQUAL('Y', militaryZone(-12 * 3600));
+  TEST_ASSERT_EQUAL('J', militaryZone(19800));      // +5:30: not a whole hour, J = local
+  char out[24];
+  formatUtcOffset(-8 * 3600, out, sizeof(out));
+  TEST_ASSERT_EQUAL_STRING("UTC-8", out);
+  formatUtcOffset(19800, out, sizeof(out));
+  TEST_ASSERT_EQUAL_STRING("UTC+5:30", out);
+  formatUtcOffset(0, out, sizeof(out));
+  TEST_ASSERT_EQUAL_STRING("UTC", out);
+  formatDtg(10, 14, 18, 'U', 10, 2026, out, sizeof(out));
+  TEST_ASSERT_EQUAL_STRING("DTG 101418U NOV 26", out);
+}
+
 void test_parse_weather_bad() {
   WeatherData w = {};
   w.tempC = 5;
@@ -292,6 +314,7 @@ int main() {
   RUN_TEST(test_parse_weather);
   RUN_TEST(test_parse_weather_bad);
   RUN_TEST(test_wind);
+  RUN_TEST(test_military_time);
   RUN_TEST(test_parse_weather_day);
   RUN_TEST(test_face_vitals);
   RUN_TEST(test_day_outlook);

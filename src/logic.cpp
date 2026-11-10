@@ -253,3 +253,30 @@ void formatWind(float kmh, int deg, char unit, char* out, size_t len) {
     snprintf(out, len, "WIND %s %dkm/h", windCompass(deg), (int)std::lround(kmh));
   }
 }
+
+char militaryZone(long offsetSec) {
+  if (offsetSec % 3600 != 0) return 'J';
+  long h = offsetSec / 3600;
+  if (h == 0) return 'Z';
+  if (h > 0 && h <= 12) return (char)(h <= 9 ? 'A' + h - 1 : 'A' + h);  // skip J
+  if (h < 0 && h >= -12) return (char)('N' - h - 1);
+  return 'J';
+}
+
+void formatUtcOffset(long offsetSec, char* out, size_t len) {
+  if (offsetSec == 0) {
+    snprintf(out, len, "UTC");
+    return;
+  }
+  char sign = offsetSec < 0 ? '-' : '+';
+  long a = offsetSec < 0 ? -offsetSec : offsetSec;
+  if (a % 3600) snprintf(out, len, "UTC%c%ld:%02ld", sign, a / 3600, (a % 3600) / 60);
+  else snprintf(out, len, "UTC%c%ld", sign, a / 3600);
+}
+
+void formatDtg(int mday, int hour, int min, char zone, int mon0, int year, char* out, size_t len) {
+  static const char* const MON[] = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+                                    "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
+  snprintf(out, len, "DTG %02d%02d%02d%c %s %02d", mday, hour, min, zone, MON[((mon0 % 12) + 12) % 12],
+           year % 100);
+}

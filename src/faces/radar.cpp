@@ -22,8 +22,9 @@ static const uint16_t PALETTE[16] = {
     R_AMBER, 0xF965, 0x1225, 0x5BC3, 0xA4C3, 0x00E4, 0x49A0, 0x024A};
 
 // Layout
-static const int CX = 120, CY = 132, R = 84;   // scope centre/radius on screen
-static const int SPR = 170, SC = SPR / 2;      // sprite size and centre
+static const int CX = 120, CY = 132, R = 76;   // scope centre/radius on screen
+static const int SPR = 166, SC = SPR / 2;      // sprite size and centre (covers the rim ticks)
+static const int BOTTOM_Y = 216;               // bottom row; the case hides the last few rows
 static const int SX = CX - SC, SY = CY - SC;   // sprite position on screen
 static const uint32_t SWEEP_MS = 4000;         // one turn
 static const int MAX_CONTACTS = 5;
@@ -50,7 +51,7 @@ class Radar : public Face {
     drawTicks(nullptr);
     tft.setTextDatum(MC_DATUM);
     tft.setTextColor(R_TEAL);
-    tft.drawString("N", CX, CY - R - 13, 1);
+    tft.drawString("N", CX, CY - R - 11, 1);
     if (!memOk) {
       tft.setTextColor(R_AMBER);
       tft.drawString("SCOPE OFFLINE // LOW MEM", CX, CY, 1);
@@ -77,12 +78,12 @@ class Radar : public Face {
       if (s.time[0] == '-') strcpy(timeStr, "--:--:--");
       else snprintf(timeStr, sizeof(timeStr), "%s:%02d", s.time, s.second);
       tft.setTextDatum(TL_DATUM);
-      tft.setTextColor(R_CYAN, R_BG);
+      tft.setTextColor(R_AMBER, R_BG);
       tft.setTextPadding(tft.textWidth("88:88:88", 4));
       tft.drawString(timeStr, 8, 2, 4);
       tft.setTextPadding(0);
+      drawZulu();
     }
-    if (strcmp(s.date, prev.date) != 0) memcpy(date, s.date, sizeof(date));
     if (weatherChanged(s, prev) || strcmp(s.city, prev.city) != 0) drawWeather(s);
   }
 
@@ -105,13 +106,12 @@ class Radar : public Face {
   int windDir = -1, windMarkDir = -1;
   int shownCount = -1;
   char timeStr[9] = "";
-  char date[16] = "";
 
   // ---- simulation ----
 
   void spawn(Contact& k, bool anywhere) {
     float a = frand(0, TWO_PI_F);
-    float r = anywhere ? frand(20, 70) : 80;
+    float r = anywhere ? frand(18, R - 14) : R - 4;
     k.x = r * cosf(a);
     k.y = r * sinf(a);
     float head = anywhere ? frand(0, TWO_PI_F) : a + 3.14159f + frand(-0.6f, 0.6f);
@@ -137,7 +137,7 @@ class Radar : public Face {
         k.tx[0] = (int16_t)k.x;
         k.ty[0] = (int16_t)k.y;
       }
-      if (k.x * k.x + k.y * k.y > 82.0f * 82.0f) k.alive = false;
+      if (k.x * k.x + k.y * k.y > (R - 2.0f) * (R - 2.0f)) k.alive = false;
       else alive++;
     }
     // keep 3-5 contacts: new ones enter from the rim now and then
@@ -149,10 +149,10 @@ class Radar : public Face {
       float b = (windDir + 180) * TWO_PI_F / 360.0f;
       rainX += 2.0f * sinf(b) * dt;
       rainY -= 2.0f * cosf(b) * dt;
-      if (rainX * rainX + rainY * rainY > 70.0f * 70.0f) {
+      if (rainX * rainX + rainY * rainY > (R - 14.0f) * (R - 14.0f)) {
         float from = windDir * TWO_PI_F / 360.0f;  // re-enter upwind
-        rainX = 55 * sinf(from);
-        rainY = -55 * cosf(from);
+        rainX = (R - 26) * sinf(from);
+        rainY = -(R - 26) * cosf(from);
       }
     }
   }
@@ -164,9 +164,9 @@ class Radar : public Face {
   void drawTicks(TFT_eSprite* spr) {
     for (int d = 0; d < 360; d += 10) {
       float a = d * TWO_PI_F / 360.0f;
-      int r0 = (d % 90 == 0) ? 85 : 87;
+      int r0 = (d % 90 == 0) ? R + 1 : R + 3;
       int x0 = (int)(r0 * sinf(a)), y0 = (int)(-r0 * cosf(a));
-      int x1 = (int)(90 * sinf(a)), y1 = (int)(-90 * cosf(a));
+      int x1 = (int)((R + 6) * sinf(a)), y1 = (int)(-(R + 6) * cosf(a));
       if (spr) spr->drawLine(SC + x0, SC + y0, SC + x1, SC + y1, d % 90 == 0 ? P_TEAL : P_RING);
       else tft.drawLine(CX + x0, CY + y0, CX + x1, CY + y1, d % 90 == 0 ? R_TEAL : R_DIM);
     }
@@ -176,9 +176,9 @@ class Radar : public Face {
   void windMark(TFT_eSprite* spr, int dir, bool erase) {
     float a = dir * TWO_PI_F / 360.0f, sa = sinf(a), ca = -cosf(a);
     float px = -ca, py = sa;  // perpendicular
-    int x0 = (int)(92 * sa), y0 = (int)(92 * ca);
-    int x1 = (int)(99 * sa + 4 * px), y1 = (int)(99 * ca + 4 * py);
-    int x2 = (int)(99 * sa - 4 * px), y2 = (int)(99 * ca - 4 * py);
+    int x0 = (int)((R + 8) * sa), y0 = (int)((R + 8) * ca);
+    int x1 = (int)((R + 15) * sa + 4 * px), y1 = (int)((R + 15) * ca + 4 * py);
+    int x2 = (int)((R + 15) * sa - 4 * px), y2 = (int)((R + 15) * ca - 4 * py);
     if (spr) spr->fillTriangle(SC + x0, SC + y0, SC + x1, SC + y1, SC + x2, SC + y2, P_AMBER);
     else tft.fillTriangle(CX + x0, CY + y0, CX + x1, CY + y1, CX + x2, CY + y2, erase ? R_BG : R_AMBER);
   }
@@ -189,14 +189,14 @@ class Radar : public Face {
     drawTicks(&g);
     if (windDir >= 0) windMark(&g, windDir, false);
     g.drawCircle(SC, SC, R, P_TEAL);
-    g.drawCircle(SC, SC, 56, P_RING);
-    g.drawCircle(SC, SC, 28, P_RING);
+    g.drawCircle(SC, SC, 50, P_RING);
+    g.drawCircle(SC, SC, 25, P_RING);
     g.drawFastHLine(SC - R, SC, 2 * R, P_RING);
     g.drawFastVLine(SC, SC - R, 2 * R, P_RING);
     g.setTextDatum(TL_DATUM);
     g.setTextColor(P_RING);
-    g.drawString("1km", SC + 30, SC - 9, 1);
-    g.drawString("2km", SC + 58, SC - 9, 1);
+    g.drawString("1km", SC + 27, SC - 9, 1);
+    g.drawString("2km", SC + 52, SC - 9, 1);
 
     if (raining) {  // rain clutter blob, drifting with the wind
       static const int8_t OFF[6][3] = {{0, 0, 9}, {11, 7, 8}, {-6, 11, 7}, {6, 13, 6}, {-10, 2, 6}, {4, -8, 6}};
@@ -280,18 +280,44 @@ class Radar : public Face {
     }
   }
 
-  void drawDateLine(uint32_t ms) {
-    char buf[32], msBuf[6] = ".---";
+  // Milliseconds right after the big local time.
+  void drawDateLine(uint32_t) {
+    char msBuf[6] = ".---";
     if (timeSynced()) {
       struct timeval tv;
       gettimeofday(&tv, nullptr);
       snprintf(msBuf, sizeof(msBuf), ".%03d", (int)(tv.tv_usec / 1000));
     }
-    snprintf(buf, sizeof(buf), "%.10s // %s", date, msBuf);
     tft.setTextDatum(TL_DATUM);
     tft.setTextColor(R_TEAL, R_BG);
-    tft.setTextPadding(130);
-    tft.drawString(buf, 8, 30, 1);
+    tft.setTextPadding(tft.textWidth(".888", 2));
+    tft.drawString(msBuf, 12 + tft.textWidth("88:88:88", 4), 10, 2);
+    tft.setTextPadding(0);
+  }
+
+  // "ZULU 22:18:35Z // UTC-8" and the military date-time group "DTG 101418U NOV 26".
+  void drawZulu() {
+    char z[40] = "ZULU --:--:--Z", dtg[24] = "DTG ------- --- --";
+    if (timeSynced()) {
+      bool known = weather.valid;  // the UTC offset comes with the weather
+      char off[12];
+      if (known) formatUtcOffset(weather.utcOffset, off, sizeof(off));
+      else strcpy(off, "UTC?");
+      time_t now = time(nullptr);
+      struct tm u, l;
+      gmtime_r(&now, &u);
+      localtime_r(&now, &l);
+      snprintf(z, sizeof(z), "ZULU %02d:%02d:%02dZ // %s", u.tm_hour, u.tm_min, u.tm_sec, off);
+      formatDtg(l.tm_mday, l.tm_hour, l.tm_min, known ? militaryZone(weather.utcOffset) : 'J', l.tm_mon,
+                l.tm_year + 1900, dtg, sizeof(dtg));
+    }
+    tft.setTextDatum(TL_DATUM);
+    tft.setTextColor(R_CYAN, R_BG);
+    tft.setTextPadding(150);
+    tft.drawString(z, 8, 30, 1);
+    tft.setTextColor(R_TEAL, R_BG);
+    tft.setTextPadding(108);  // stop short of the N label
+    tft.drawString(dtg, 8, 41, 1);
     tft.setTextPadding(0);
   }
 
@@ -307,24 +333,24 @@ class Radar : public Face {
     windMarkDir = s.windDir;
 
     // bottom row: temperature + condition, city
-    tft.fillRect(0, 224, 240, 16, R_BG);
+    tft.fillRect(0, BOTTOM_Y - 2, 240, 240 - BOTTOM_Y + 2, R_BG);
     tft.setTextDatum(TL_DATUM);
     tft.setTextColor(R_CYAN);
     char buf[32];
     if (s.weatherValid) {
       snprintf(buf, sizeof(buf), "%d", s.temp);
-      int x = 8 + tft.drawString(buf, 8, 224, 2);
-      tft.drawCircle(x + 3, 227, 2, R_CYAN);
+      int x = 8 + tft.drawString(buf, 8, BOTTOM_Y, 2);
+      tft.drawCircle(x + 3, BOTTOM_Y + 3, 2, R_CYAN);
       snprintf(buf, sizeof(buf), "%c%s %s", s.unit, s.stale ? "*" : "", s.label);
-      tft.drawString(buf, x + 7, 224, 2);
+      tft.drawString(buf, x + 7, BOTTOM_Y, 2);
     } else {
-      tft.drawString("-- NO SIGNAL", 8, 224, 2);
+      tft.drawString("-- NO SIGNAL", 8, BOTTOM_Y, 2);
     }
     char city[48];
     fitLabel(s.city, city, sizeof(city), 84, [](const char* t) { return (int)tft.textWidth(t, 1); });
     tft.setTextDatum(BR_DATUM);
     tft.setTextColor(R_TEAL);
-    tft.drawString(city, 232, 238, 1);
+    tft.drawString(city, 232, BOTTOM_Y + 13, 1);
   }
 };
 
