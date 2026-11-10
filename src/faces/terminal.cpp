@@ -43,6 +43,7 @@ class Terminal : public Face {
     tft.setTextColor(C_GREEN);
     tft.drawString("> CHRONO.SYNC OK", 20, 14, 2);
     for (int x = PANE_X; x < PANE_X + PANE_W; x += 6) tft.drawFastHLine(x, DIV_Y, 3, C_LOGDIM);
+    tft.fillRect(PANE_X - 2, PANE_Y - 2, PANE_W + 4, LINES * LINE_H + 1, bg);  // no grid behind the shell
 
     timeStr[0] = '\0';
     memset(lines, 0, sizeof(lines));
@@ -192,7 +193,7 @@ class Terminal : public Face {
 
   void drawLine(int i, bool cursor) {
     int y = PANE_Y + i * LINE_H;
-    clearRect(PANE_X, y, PANE_W, 8);
+    tft.fillRect(PANE_X, y, PANE_W, 8, bg);
     tft.setTextDatum(TL_DATUM);
     tft.setTextColor(colors[i]);
     int w = tft.drawString(lines[i], PANE_X, y, 1);
