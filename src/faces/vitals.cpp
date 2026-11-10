@@ -19,18 +19,30 @@ static const int TX = (240 - TIME_W) / 2, TY = 20;  // time sprite (HH:MM:SS)
 static const int DATE_Y = 84, MS_X = 228;
 static const int ECG_X0 = 12, ECG_W = 216, ECG_Y0 = 96, ECG_Y1 = 166, ECG_BASE = 134;
 static const int ECG_GAP = 14;           // blank columns ahead of the sweep head
-static const int SWEEP_PX_PER_S = 108;   // two beats across the screen
+static const int SWEEP_PX_PER_S = 108;
+static const int HEAD_LEN = 18;          // bright "phosphor" tip of the trace
+#define C_HEAD 0xE7FE                    // #E6FFF0
 static const int STRIP_Y = 172, STRIP_H = 22, TAG_W = 58;
 static const int LABEL_Y = 202, VALUE_Y = 214;
 static const int HEART_X = 214, HEART_Y = 218;
 
-// ECG shape for one beat (one per second), u = px into the beat (0..107).
-static int wave(int u) {
-  if (u >= 8 && u < 18) return (int)(-4 * sinf(3.1416f * (u - 8) / 10));    // P
-  if (u >= 26 && u < 30) return -26 * (u - 26) / 4;                          // R up
-  if (u >= 30 && u < 34) return -26 + 46 * (u - 30) / 4;                     // down past base
-  if (u >= 34 && u < 37) return 20 - 20 * (u - 34) / 3;                      // S back
-  if (u >= 50 && u < 70) return (int)(-7 * sinf(3.1416f * (u - 50) / 20));  // T
+// One heartbeat, t = ms since the beat started. QRS width stays fixed while the
+// beat length varies, like a real trace. Ectopic beats: no P wave, wide QRS, inverted T.
+static float beatShape(int t, int amp, bool ectopic) {
+  const float PI_F = 3.14159f;
+  if (ectopic) {
+    if (t >= 200 && t < 260) return -amp * (t - 200) / 60.0f;
+    if (t >= 260 && t < 340) return -amp + 1.6f * amp * (t - 260) / 80.0f;
+    if (t >= 340 && t < 400) return 0.6f * amp * (1 - (t - 340) / 60.0f);
+    if (t >= 470 && t < 720) return 0.3f * amp * sinf(PI_F * (t - 470) / 250);
+    return 0;
+  }
+  if (t >= 80 && t < 180) return -4 * sinf(PI_F * (t - 80) / 100);       // P
+  if (t >= 230 && t < 250) return 3.0f * (t - 230) / 20;                  // Q dip
+  if (t >= 250 && t < 280) return 3 - (amp + 3) * (t - 250) / 30.0f;      // R up
+  if (t >= 280 && t < 310) return -amp + 1.75f * amp * (t - 280) / 30.0f; // down past base
+  if (t >= 310 && t < 340) return 0.75f * amp * (1 - (t - 310) / 30.0f);  // S back
+  if (t >= 440 && t < 640) return -0.27f * amp * sinf(PI_F * (t - 440) / 200);  // T
   return 0;
 }
 
@@ -50,10 +62,12 @@ class Vitals : public Face {
     tft.drawString("HUM", 142, LABEL_Y, 1);
     tft.setTextColor(C_PULSE);
     tft.drawString("PULSE", 190, LABEL_Y, 1);
-    tft.setTextDatum(TL_DATUM);
-    tft.drawString("60", 190, VALUE_Y, 2);  // one beat per second
     timeStr[0] = '\0';
     lastX = -1;
+    for (int i = 0; i < ECG_W; i++) colY[i] = -1;
+    bpm = 72;
+    shownBpm = -1;
+    nextBeat(millis());
     heartOn = true;
     drawHeart(false);
   }
@@ -80,17 +94,39 @@ class Vitals : public Face {
   }
 
   void tick(uint32_t ms) override {
-    int msInSec = msNow(ms);
-    drawMillis(msInSec);
-    sweep(ms, msInSec);
-    drawHeart(msInSec >= 250 && msInSec < 450);  // flash with the R peak
+    drawMillis(msNow(ms));
+    sweep(ms);
+    uint32_t sinceBeat = ms - beatStart;
+    drawHeart(sinceBeat >= 250 && sinceBeat < 420);  // flash with the R peak
+    drawBpm();
   }
 
  private:
   uint16_t bg = 0;
   char timeStr[9] = "";
   int lastX = -1, lastY = ECG_BASE;
+  int16_t colY[ECG_W];  // last drawn y per column, -1 = blank
   bool heartOn = false;
+  // current beat
+  uint32_t beatStart = 0;
+  int beatLen = 833, amp = 26;
+  bool ectopic = false, pauseNext = false;
+  int bpm = 72, shownBpm = -1;
+
+  // Pick the next beat: heart rate drifts 62-92, height varies, ~1 in 14 is ectopic
+  // and is followed by a longer compensatory pause.
+  void nextBeat(uint32_t at) {
+    beatStart = at;
+    bpm += (int)random(-3, 4);
+    if (bpm < 62) bpm = 62;
+    if (bpm > 92) bpm = 92;
+    beatLen = 60000 / bpm;
+    amp = 22 + (int)random(0, 9);
+    ectopic = !pauseNext && random(14) == 0;
+    if (pauseNext) beatLen = beatLen * 3 / 2;
+    pauseNext = ectopic;
+    if (ectopic) beatLen = beatLen * 3 / 4;  // comes early
+  }
 
   // Milliseconds into the current second (wall clock once synced).
   int msNow(uint32_t ms) {
@@ -120,21 +156,48 @@ class Vitals : public Face {
   }
 
   // Advance the trace head to where it should be now, drawing every column on the way.
-  void sweep(uint32_t ms, int msInSec) {
+  // Each column gets the trace value at the moment the head passed it.
+  void sweep(uint32_t ms) {
     int headX = ECG_X0 + (int)((ms * (uint32_t)SWEEP_PX_PER_S / 1000) % ECG_W);
     if (lastX < 0) lastX = headX;
     int steps = (headX - lastX + ECG_W) % ECG_W;
-    int uNow = msInSec * SWEEP_PX_PER_S / 1000;  // px into the current beat
     for (int i = 1; i <= steps; i++) {
       int x = ECG_X0 + (lastX - ECG_X0 + i) % ECG_W;
-      int u = ((uNow - (steps - i)) % SWEEP_PX_PER_S + SWEEP_PX_PER_S) % SWEEP_PX_PER_S;
-      int y = ECG_BASE + wave(u);
-      clearColumn(ECG_X0 + (x - ECG_X0 + ECG_GAP) % ECG_W);
-      if (x == ECG_X0) tft.drawPixel(x, y, C_GREEN);  // wrapped: start a fresh line
-      else tft.drawLine(x - 1, lastY, x, y, C_GREEN);
+      uint32_t tc = ms - (uint32_t)((steps - i) * 1000 / SWEEP_PX_PER_S);
+      while ((int32_t)(tc - beatStart) >= beatLen) nextBeat(beatStart + beatLen);
+      float wander = 3 * sinf(6.2832f * (tc % 7000) / 7000.0f);
+      int noise = random(3) == 0 ? (int)random(-1, 2) : 0;
+      int y = ECG_BASE + (int)(beatShape((int)(tc - beatStart), amp, ectopic) + wander) + noise;
+      if (y < ECG_Y0 + 1) y = ECG_Y0 + 1;
+      if (y > ECG_Y1 - 2) y = ECG_Y1 - 2;
+
+      int ahead = ECG_X0 + (x - ECG_X0 + ECG_GAP) % ECG_W;
+      clearColumn(ahead);
+      colY[ahead - ECG_X0] = -1;
+      if (x == ECG_X0) tft.drawPixel(x, y, C_HEAD);  // wrapped: start a fresh line
+      else tft.drawLine(x - 1, lastY, x, y, C_HEAD);
+      colY[x - ECG_X0] = (int16_t)y;
       lastY = y;
+
+      // the tip fades: repaint the segment HEAD_LEN behind in normal green
+      int tail = (x - ECG_X0 - HEAD_LEN + ECG_W) % ECG_W;
+      int prevTail = (tail - 1 + ECG_W) % ECG_W;
+      if (tail != 0 && colY[tail] >= 0 && colY[prevTail] >= 0)
+        tft.drawLine(ECG_X0 + prevTail, colY[prevTail], ECG_X0 + tail, colY[tail], C_GREEN);
     }
     lastX = headX;
+  }
+
+  void drawBpm() {
+    if (bpm == shownBpm) return;
+    shownBpm = bpm;
+    char buf[4];
+    snprintf(buf, sizeof(buf), "%d", bpm);
+    tft.setTextDatum(TL_DATUM);
+    tft.setTextColor(C_PULSE, bg);
+    tft.setTextPadding(tft.textWidth("188", 2));
+    tft.drawString(buf, 190, VALUE_Y, 2);
+    tft.setTextPadding(0);
   }
 
   void drawHeart(bool on) {
