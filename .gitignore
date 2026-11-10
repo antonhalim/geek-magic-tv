@@ -1,0 +1,4 @@
+.pio/
+secrets.ini
+.superpowers/
+.DS_Store
