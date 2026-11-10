@@ -1,11 +1,12 @@
 #pragma once
 #include <Arduino.h>
 #include <TFT_eSPI.h>
+#include "../logic.h"
 
 struct FaceState {
   char time[6];
   char date[16];
-  char city[11];
+  char city[48];
   int temp;
   int hi;
   int lo;
@@ -18,6 +19,7 @@ struct FaceState {
 };
 
 void buildFaceState(FaceState& s);
+int textWidth2(const char* s);  // pixel width in font 2, for fitLabel
 
 class Face {
  public:

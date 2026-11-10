@@ -14,6 +14,8 @@ static const int GRID_H = 5;                  // moving horizontal lines
 static const int GRID_STEPS = 20;             // animation steps per line spacing
 
 class Netrunner : public Face {
+  int secX = 0;
+
  public:
   void begin() override {
     bg = spriteColor(C_BG_A);
@@ -33,26 +35,35 @@ class Netrunner : public Face {
 
   void update(const FaceState& s, const FaceState& prev) override {
     if (strcmp(s.city, prev.city) != 0) {
+      char city[48];
+      fitLabel(s.city, city, sizeof(city), 128, textWidth2);
       tft.fillRect(96, 12, 133, 17, bg);
       tft.setTextDatum(MR_DATUM);
       tft.setTextColor(C_MAGENTA, bg);
-      tft.drawString(s.city, 228, 20, 2);
+      tft.drawString(city, 228, 20, 2);
     }
     if (strcmp(s.time, prev.time) != 0) {
       memcpy(timeStr, s.time, sizeof(timeStr));
       renderTime(2, 0);
       if (!glitch.active) pushClean(TX, TY, GLITCH_OFF, bg);
     }
-    if (strcmp(s.date, prev.date) != 0 || s.second != prev.second) {
-      char buf[24];
-      if (s.time[0] == '-')
-        snprintf(buf, sizeof(buf), "%s  :--", s.date);
-      else
-        snprintf(buf, sizeof(buf), "%s  :%02d", s.date, s.second);
-      tft.setTextDatum(MC_DATUM);
+    // Date is centred once; seconds sit at a fixed x after it so the line never shifts.
+    if (strcmp(s.date, prev.date) != 0) {
+      int secW = tft.textWidth(":88", 2);
+      int x = 120 - (tft.textWidth(s.date, 2) + 6 + secW) / 2;
+      tft.fillRect(10, 118, 220, 16, bg);
+      tft.setTextDatum(ML_DATUM);
       tft.setTextColor(C_LAVENDER, bg);
-      tft.setTextPadding(200);
-      tft.drawString(buf, 120, 126, 2);
+      secX = x + tft.drawString(s.date, x, 126, 2) + 6;
+    }
+    if (strcmp(s.date, prev.date) != 0 || s.second != prev.second) {
+      char sec[4];
+      if (s.time[0] == '-') strcpy(sec, ":--");
+      else snprintf(sec, sizeof(sec), ":%02d", s.second);
+      tft.setTextDatum(ML_DATUM);
+      tft.setTextColor(C_CYAN, bg);
+      tft.setTextPadding(tft.textWidth(":88", 2));
+      tft.drawString(sec, secX, 126, 2);
       tft.setTextPadding(0);
     }
     if (weatherChanged(s, prev)) drawWeather(s);

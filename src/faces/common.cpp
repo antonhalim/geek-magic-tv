@@ -5,6 +5,8 @@
 #include "../display.h"
 #include "../weather.h"
 
+int textWidth2(const char* s) { return tft.textWidth(s, 2); }
+
 void buildFaceState(FaceState& s) {
   memset(&s, 0, sizeof(s));
   if (timeSynced()) {
@@ -18,7 +20,7 @@ void buildFaceState(FaceState& s) {
     strcpy(s.time, "--:--");
     strcpy(s.date, "--- -- --- ----");
   }
-  truncateUpper(settings.city, s.city, 10);
+  truncateUpper(settings.city, s.city, sizeof(s.city) - 1);
   s.unit = settings.unit;
   s.weatherValid = weather.valid;
   s.stale = weatherStale();

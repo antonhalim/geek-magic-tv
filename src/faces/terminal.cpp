@@ -54,8 +54,9 @@ class Terminal : public Face {
     if (strcmp(s.date, prev.date) != 0) drawDate(s);
     if (strcmp(s.city, prev.city) != 0) {
       clearRect(20, 172, 200, 16);
-      char buf[24];
-      snprintf(buf, sizeof(buf), "> ATMOS.%s", s.city);
+      char city[48], buf[64];
+      fitLabel(s.city, city, sizeof(city), 200 - tft.textWidth("> ATMOS.", 2), textWidth2);
+      snprintf(buf, sizeof(buf), "> ATMOS.%s", city);
       tft.setTextDatum(TL_DATUM);
       tft.setTextColor(C_AMBER);
       tft.drawString(buf, 20, 172, 2);

@@ -42,14 +42,18 @@ function mark(id,v){for(const b of $(id).children)b.classList.toggle('on',b.data
 function show(c){$('city').textContent=c.city;mark('unit',c.unit);mark('face',c.face);if(document.activeElement!==$('br')&&!t)$('br').value=c.brightness;$('bv').textContent=c.brightness}
 for(const id of['unit','face'])$(id).onclick=e=>{const v=e.target.dataset.v;if(v!=null)post({[id]:id=='face'?+v:v})};
 $('br').oninput=e=>{$('bv').textContent=e.target.value;clearTimeout(t);t=setTimeout(()=>{t=0;post({brightness:+e.target.value})},300)};
+const ab=s=>Object.fromEntries(s.split(',').map(p=>p.split(':')));
+const US=ab('Alabama:AL,Alaska:AK,Arizona:AZ,Arkansas:AR,California:CA,Colorado:CO,Connecticut:CT,Delaware:DE,District of Columbia:DC,Florida:FL,Georgia:GA,Hawaii:HI,Idaho:ID,Illinois:IL,Indiana:IN,Iowa:IA,Kansas:KS,Kentucky:KY,Louisiana:LA,Maine:ME,Maryland:MD,Massachusetts:MA,Michigan:MI,Minnesota:MN,Mississippi:MS,Missouri:MO,Montana:MT,Nebraska:NE,Nevada:NV,New Hampshire:NH,New Jersey:NJ,New Mexico:NM,New York:NY,North Carolina:NC,North Dakota:ND,Ohio:OH,Oklahoma:OK,Oregon:OR,Pennsylvania:PA,Rhode Island:RI,South Carolina:SC,South Dakota:SD,Tennessee:TN,Texas:TX,Utah:UT,Vermont:VT,Virginia:VA,Washington:WA,West Virginia:WV,Wisconsin:WI,Wyoming:WY,Puerto Rico:PR');
+const CA=ab('Alberta:AB,British Columbia:BC,Manitoba:MB,New Brunswick:NB,Newfoundland and Labrador:NL,Nova Scotia:NS,Ontario:ON,Prince Edward Island:PE,Quebec:QC,Saskatchewan:SK,Northwest Territories:NT,Nunavut:NU,Yukon:YT');
+function region(g){if(g.country=='US')return US[g.admin1]||'US';if(g.country=='CA')return CA[g.admin1]||'CA';return g.country}
 $('q').onkeydown=async e=>{
 if(e.key!='Enter')return;
 const r=$('res');r.textContent='...';
 const a=await fetch('/api/geocode?q='+encodeURIComponent(e.target.value)).then(r=>r.json()).catch(()=>[]);
 r.textContent=a.length?'':'No results';
 for(const g of a){const b=document.createElement('button');
-const name=(g.name+(g.admin1?', '+g.admin1:'')).slice(0,47);
-b.textContent=name+' ('+g.country+')';
+const rg=region(g),name=(g.name+(rg?', '+rg:'')).slice(0,47);
+b.textContent=g.name+(g.admin1?', '+g.admin1:'')+' ('+g.country+')';
 b.onclick=()=>{post({city:name,lat:g.lat,lon:g.lon});r.textContent='';$('q').value=''};
 r.appendChild(b)}};
 function poll(){fetch('/api/status').then(r=>r.json()).then(s=>{

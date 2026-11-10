@@ -41,3 +41,5 @@ void formatTime(int h, int m, char* out);
 void formatDate(int wday, int mday, int mon, int year, char* out);
 void urlEncode(const char* in, char* out, size_t len);
 void truncateUpper(const char* in, char* out, size_t maxChars);
+// Fits "NAME, REGION" into maxW px: full text, else NAME, else NAME cut with "...".
+void fitLabel(const char* in, char* out, size_t len, int maxW, int (*width)(const char*));

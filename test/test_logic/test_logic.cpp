@@ -126,6 +126,20 @@ void test_truncate() {
   TEST_ASSERT_EQUAL_STRING("LLANFAIRPW", out);
 }
 
+static int w8(const char* s) { return (int)strlen(s) * 8; }
+
+void test_fit_label() {
+  char out[32];
+  fitLabel("VANCOUVER, WA", out, sizeof(out), 104, w8);  // 13 chars = 104 px
+  TEST_ASSERT_EQUAL_STRING("VANCOUVER, WA", out);
+  fitLabel("VANCOUVER, WA", out, sizeof(out), 100, w8);  // drops region
+  TEST_ASSERT_EQUAL_STRING("VANCOUVER", out);
+  fitLabel("LLANFAIRPWLLGWYNGYLL, GB", out, sizeof(out), 80, w8);  // 10 chars max
+  TEST_ASSERT_EQUAL_STRING("LLANFAI...", out);
+  fitLabel("PARIS", out, sizeof(out), 80, w8);
+  TEST_ASSERT_EQUAL_STRING("PARIS", out);
+}
+
 void test_parse_latlon_range() {
   Settings s;
   TEST_ASSERT_TRUE(parseSettings("{\"lat\":999,\"lon\":-500}", s));
@@ -168,5 +182,6 @@ int main() {
   RUN_TEST(test_geocode);
   RUN_TEST(test_url_encode);
   RUN_TEST(test_truncate);
+  RUN_TEST(test_fit_label);
   return UNITY_END();
 }

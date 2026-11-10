@@ -166,3 +166,22 @@ void truncateUpper(const char* in, char* out, size_t maxChars) {
   }
   out[i] = '\0';
 }
+
+void fitLabel(const char* in, char* out, size_t len, int maxW, int (*width)(const char*)) {
+  if (!len) return;
+  snprintf(out, len, "%s", in);
+  if (width(out) <= maxW) return;
+  char* comma = strchr(out, ',');
+  if (comma) *comma = '\0';
+  if (width(out) <= maxW) return;
+  size_t n = strlen(out);
+  while (n > 0) {
+    out[--n] = '\0';
+    char tmp[64];
+    snprintf(tmp, sizeof(tmp), "%s...", out);
+    if (width(tmp) <= maxW) {
+      snprintf(out, len, "%s", tmp);
+      return;
+    }
+  }
+}
