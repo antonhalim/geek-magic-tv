@@ -113,6 +113,8 @@ void test_face_vitals() {
   TEST_ASSERT_TRUE(parseSettings("{\"face\":2}", s));
   TEST_ASSERT_EQUAL(2, s.face);
   TEST_ASSERT_TRUE(parseSettings("{\"face\":3}", s));
+  TEST_ASSERT_EQUAL(3, s.face);  // corpo
+  TEST_ASSERT_TRUE(parseSettings("{\"face\":4}", s));
   TEST_ASSERT_EQUAL(0, s.face);
 }
 

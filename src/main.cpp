@@ -48,7 +48,12 @@ void loop() {
 
   if (faceDirty || !face) {
     faceDirty = false;
-    face = settings.face == 1 ? faceTerminal() : settings.face == 2 ? faceVitals() : faceNetrunner();
+    switch (settings.face) {
+      case 1: face = faceTerminal(); break;
+      case 2: face = faceVitals(); break;
+      case 3: face = faceCorpo(); break;
+      default: face = faceNetrunner();
+    }
     face->begin();
     memset(&prev, 0, sizeof(prev));  // zeroed prev forces a full update
     buildFaceState(cur);

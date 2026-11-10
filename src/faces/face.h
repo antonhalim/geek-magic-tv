@@ -34,6 +34,7 @@ class Face {
 Face* faceNetrunner();
 Face* faceTerminal();
 Face* faceVitals();
+Face* faceCorpo();
 
 // ---- shared helpers (common.cpp) ----
 
