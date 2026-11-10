@@ -36,7 +36,7 @@ Face* faceTerminal();
 
 // Time digits sprite, shared by both faces (only one face is active at a time).
 // 8-bit colour, allocated once on first use.
-#define TIME_W 200
+#define TIME_W 224
 #define TIME_H 52
 TFT_eSprite& timeSprite();
 

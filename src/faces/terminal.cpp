@@ -5,7 +5,7 @@
 #include "../weather.h"
 
 // Layout (240x240)
-static const int TX = 20, TY = 62;  // time sprite
+static const int TX = (240 - TIME_W) / 2, TY = 62;  // time sprite
 static const int GLITCH_OFF = 4;
 static const int BAR_X = 44, BAR_Y = 118, BAR_W = 152, BAR_H = 4;
 static const char* const SYNC_TEXT = "> CHRONO.SYNC OK";

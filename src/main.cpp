@@ -39,7 +39,7 @@ void loop() {
     lastStateAt = now;
   }
 
-  if (now - lastStateAt >= 250) {
+  if (now - lastStateAt >= 50) {  // 50 ms so seconds roll over on time
     lastStateAt = now;
     buildFaceState(cur);
     if (memcmp(&cur, &prev, sizeof(cur)) != 0) {
