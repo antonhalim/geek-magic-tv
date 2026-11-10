@@ -129,7 +129,7 @@ void formatDate(int wday, int mday, int mon, int year, char* out) {
 }
 
 void urlEncode(const char* in, char* out, size_t len) {
-  static const char HEX[] = "0123456789ABCDEF";
+  static const char HEXCHARS[] = "0123456789ABCDEF";
   size_t o = 0;
   for (; *in; in++) {
     unsigned char c = static_cast<unsigned char>(*in);
@@ -141,8 +141,8 @@ void urlEncode(const char* in, char* out, size_t len) {
     } else {
       if (o + 3 >= len) break;
       out[o++] = '%';
-      out[o++] = HEX[c >> 4];
-      out[o++] = HEX[c & 15];
+      out[o++] = HEXCHARS[c >> 4];
+      out[o++] = HEXCHARS[c & 15];
     }
   }
   out[o] = '\0';
