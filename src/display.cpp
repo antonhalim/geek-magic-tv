@@ -29,11 +29,17 @@ void showSplash() {
   setBrightness(60);
 }
 
+// Centered text that steps down font 4 -> 2 -> 1 until it fits the screen.
+static void drawFitCentered(const char* s, int y, uint8_t font) {
+  while (font > 1 && tft.textWidth(s, font) > 224) font = (font == 4) ? 2 : 1;
+  tft.drawString(s, 120, y, font);
+}
+
 void showMessage(const char* line1, const char* line2) {
   tft.fillScreen(C_BG_A);
   tft.setTextDatum(MC_DATUM);
   tft.setTextColor(C_CYAN, C_BG_A);
-  tft.drawString(line1, 120, 100, 4);
+  drawFitCentered(line1, 100, 4);
   tft.setTextColor(C_MAGENTA, C_BG_A);
-  tft.drawString(line2, 120, 140, 2);
+  drawFitCentered(line2, 140, 2);
 }
