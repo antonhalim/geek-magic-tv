@@ -5,8 +5,9 @@
 #include "../display.h"
 #include "../weather.h"
 
-#define C_RED 0xE907     // #E8213C
-#define C_REDDIM 0x4882  // dim red for pulsing
+#define C_RED 0xF800     // pure red: survives the 8-bit sprite and this panel without turning pink
+#define C_WARN 0xFE40    // #FFC800 hazard yellow
+#define C_WARNDIM 0x49E0 // dim yellow for pulsing
 #define C_WHITE 0xF79E   // #F2F2F2
 #define C_GREY 0x8C52    // #8A8A92
 #define C_RULE 0x39C8    // #3A3A42
@@ -176,7 +177,7 @@ class Corpo : public Face {
       for (int x = -shift; x < 240; x += 16) {
         int x0 = x < 0 ? 0 : x;
         int x1 = x + 8 > 240 ? 240 : x + 8;
-        if (x1 > x0) tft.drawFastHLine(x0, y, x1 - x0, C_RED);
+        if (x1 > x0) tft.drawFastHLine(x0, y, x1 - x0, C_WARN);
         int b0 = x + 8 < 0 ? 0 : x + 8;
         int b1 = x + 16 > 240 ? 240 : x + 16;
         if (b1 > b0) tft.drawFastHLine(b0, y, b1 - b0, bg);
@@ -187,7 +188,7 @@ class Corpo : public Face {
   void drawWarn(bool on) {
     if (on == warnOn) return;
     warnOn = on;
-    uint16_t c = on ? C_RED : C_REDDIM;
+    uint16_t c = on ? C_WARN : C_WARNDIM;
     tft.drawTriangle(WARN_X, WARN_Y, WARN_X + 9, WARN_Y + 16, WARN_X - 9, WARN_Y + 16, c);
     tft.drawTriangle(WARN_X, WARN_Y + 1, WARN_X + 8, WARN_Y + 16, WARN_X - 8, WARN_Y + 16, c);
     tft.fillRect(WARN_X, WARN_Y + 6, 1, 5, c);
