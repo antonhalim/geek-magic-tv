@@ -14,8 +14,6 @@ static const int GRID_H = 5;                  // moving horizontal lines
 static const int GRID_STEPS = 20;             // animation steps per line spacing
 
 class Netrunner : public Face {
-  int secX = 0;
-
  public:
   void begin() override {
     bg = spriteColor(C_BG_A);
@@ -42,28 +40,18 @@ class Netrunner : public Face {
       tft.setTextColor(C_MAGENTA, bg);
       tft.drawString(city, 228, 20, 2);
     }
-    if (strcmp(s.time, prev.time) != 0) {
+    if (strcmp(s.time, prev.time) != 0 || s.second != prev.second) {
       memcpy(timeStr, s.time, sizeof(timeStr));
+      if (s.time[0] == '-') strcpy(secStr, "--");
+      else snprintf(secStr, sizeof(secStr), "%02d", s.second);
       renderTime(2, 0);
       if (!glitch.active) pushClean(TX, TY, GLITCH_OFF, bg);
     }
-    // Date is centred once; seconds sit at a fixed x after it so the line never shifts.
     if (strcmp(s.date, prev.date) != 0) {
-      int secW = tft.textWidth(":88", 2);
-      int x = 120 - (tft.textWidth(s.date, 2) + 6 + secW) / 2;
-      tft.fillRect(10, 118, 220, 16, bg);
-      tft.setTextDatum(ML_DATUM);
+      tft.setTextDatum(MC_DATUM);
       tft.setTextColor(C_LAVENDER, bg);
-      secX = x + tft.drawString(s.date, x, 126, 2) + 6;
-    }
-    if (strcmp(s.date, prev.date) != 0 || s.second != prev.second) {
-      char sec[4];
-      if (s.time[0] == '-') strcpy(sec, ":--");
-      else snprintf(sec, sizeof(sec), ":%02d", s.second);
-      tft.setTextDatum(ML_DATUM);
-      tft.setTextColor(C_CYAN, bg);
-      tft.setTextPadding(tft.textWidth(":88", 2));
-      tft.drawString(sec, secX, 126, 2);
+      tft.setTextPadding(200);
+      tft.drawString(s.date, 120, 126, 2);
       tft.setTextPadding(0);
     }
     if (weatherChanged(s, prev)) drawWeather(s);
@@ -85,6 +73,7 @@ class Netrunner : public Face {
  private:
   uint16_t bg = 0;
   char timeStr[6] = "";
+  char secStr[3] = "";
   Glitch glitch = {0, 0, false};
   int step = 0;
   int lineY[GRID_H];
@@ -92,11 +81,18 @@ class Netrunner : public Face {
   void renderTime(int magentaDx, int cyanDx) {
     TFT_eSprite& spr = timeSprite();
     spr.fillSprite(bg);
-    spr.setTextDatum(MC_DATUM);
+    // HH:MM in font 7 with small seconds after it, sharing the baseline.
+    // Widths are fixed (7-segment digits, "88" for seconds) so nothing shifts.
+    const int gap = 4, base = TIME_H - 2;
+    int x = (TIME_W - spr.textWidth(timeStr, 7) - gap - spr.textWidth("88", 4)) / 2;
+    int sx = x + spr.textWidth(timeStr, 7) + gap;
+    spr.setTextDatum(BL_DATUM);
     spr.setTextColor(C_MAGENTA);
-    spr.drawString(timeStr, TIME_W / 2 + magentaDx, TIME_H / 2, 7);
+    spr.drawString(timeStr, x + magentaDx, base, 7);
+    spr.drawString(secStr, sx + magentaDx, base, 4);
     spr.setTextColor(C_CYAN);
-    spr.drawString(timeStr, TIME_W / 2 + cyanDx, TIME_H / 2, 7);
+    spr.drawString(timeStr, x + cyanDx, base, 7);
+    spr.drawString(secStr, sx + cyanDx, base, 4);
   }
 
   void drawWeather(const FaceState& s) {
