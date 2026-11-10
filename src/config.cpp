@@ -31,6 +31,6 @@ bool configSave() {
     return false;
   }
   if (LittleFS.rename("/config.tmp", "/config.json")) return true;
-  LittleFS.remove("/config.json");
-  return LittleFS.rename("/config.tmp", "/config.json");
+  LittleFS.remove("/config.tmp");
+  return false;
 }

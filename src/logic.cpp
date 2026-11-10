@@ -22,14 +22,24 @@ Settings defaultSettings() {
 }
 
 bool parseSettings(const char* json, Settings& out) {
-  out = defaultSettings();
+  return parseSettingsOver(json, defaultSettings(), out);
+}
+
+bool parseSettingsOver(const char* json, const Settings& base, Settings& out) {
+  out = base;
   JsonDocument doc;
   if (deserializeJson(doc, json)) return false;
 
   const char* city = doc["city"] | static_cast<const char*>(nullptr);
   if (city && city[0]) copyStr(out.city, sizeof(out.city), city);
-  if (doc["lat"].is<float>()) out.lat = doc["lat"];
-  if (doc["lon"].is<float>()) out.lon = doc["lon"];
+  if (doc["lat"].is<float>()) {
+    float v = doc["lat"];
+    if (v >= -90.0f && v <= 90.0f) out.lat = v;
+  }
+  if (doc["lon"].is<float>()) {
+    float v = doc["lon"];
+    if (v >= -180.0f && v <= 180.0f) out.lon = v;
+  }
 
   const char* unit = doc["unit"] | static_cast<const char*>(nullptr);
   if (unit && (unit[0] == 'C' || unit[0] == 'F') && unit[1] == '\0') out.unit = unit[0];

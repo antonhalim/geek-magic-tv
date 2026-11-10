@@ -126,12 +126,39 @@ void test_truncate() {
   TEST_ASSERT_EQUAL_STRING("LLANFAIRPW", out);
 }
 
+void test_parse_latlon_range() {
+  Settings s;
+  TEST_ASSERT_TRUE(parseSettings("{\"lat\":999,\"lon\":-500}", s));
+  TEST_ASSERT_FLOAT_WITHIN(0.001f, 37.7749f, s.lat);
+  TEST_ASSERT_FLOAT_WITHIN(0.001f, -122.4194f, s.lon);
+  TEST_ASSERT_TRUE(parseSettings("{\"lat\":-33.86,\"lon\":151.2}", s));
+  TEST_ASSERT_FLOAT_WITHIN(0.001f, -33.86f, s.lat);
+  TEST_ASSERT_FLOAT_WITHIN(0.001f, 151.2f, s.lon);
+}
+
+void test_parse_over_keeps_base() {
+  Settings base = defaultSettings();
+  base.face = 1;
+  base.unit = 'C';
+  Settings o;
+  TEST_ASSERT_TRUE(parseSettingsOver("{\"face\":5,\"unit\":\"K\"}", base, o));
+  TEST_ASSERT_EQUAL_UINT8(1, o.face);
+  TEST_ASSERT_EQUAL_CHAR('C', o.unit);
+  TEST_ASSERT_TRUE(parseSettingsOver("{\"brightness\":500}", base, o));
+  TEST_ASSERT_EQUAL_UINT8(100, o.brightness);
+  o = defaultSettings();
+  TEST_ASSERT_FALSE(parseSettingsOver("{bad", base, o));
+  TEST_ASSERT_EQUAL_MEMORY(&base, &o, sizeof(Settings));
+}
+
 int main() {
   UNITY_BEGIN();
   RUN_TEST(test_defaults);
   RUN_TEST(test_parse_invalid_json);
   RUN_TEST(test_parse_partial);
   RUN_TEST(test_parse_clamps);
+  RUN_TEST(test_parse_latlon_range);
+  RUN_TEST(test_parse_over_keeps_base);
   RUN_TEST(test_settings_roundtrip);
   RUN_TEST(test_temp);
   RUN_TEST(test_wmo);

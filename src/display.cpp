@@ -23,9 +23,9 @@ void showSplash() {
   tft.fillScreen(C_BG_A);
   tft.setTextDatum(MC_DATUM);
   tft.setTextColor(C_CYAN, C_BG_A);
-  tft.drawString("SMALLTV", 120, 100, 4);
+  tft.drawString("BOOTING //", 120, 100, 4);
   tft.setTextColor(C_MAGENTA, C_BG_A);
-  tft.drawString("BOOTING...", 120, 140, 2);
+  tft.drawString("CYBERCLOCK", 120, 140, 4);
   setBrightness(60);
 }
 

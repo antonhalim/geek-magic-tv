@@ -36,12 +36,12 @@ p{margin:8px 0 0;font-size:12px;color:#7aa}
 <section><h2>Firmware</h2><a href="/update">/update</a>
 <p>To revert to stock, upload GeekMagic's official SmallTV-Ultra firmware .bin</p></section>
 <script>
-const $=id=>document.getElementById(id);
-const post=o=>fetch('/api/config',{method:'POST',body:JSON.stringify(o)}).then(r=>r.json()).then(show);
+const $=id=>document.getElementById(id);let t;
+const post=o=>fetch('/api/config',{method:'POST',body:JSON.stringify(o)}).then(r=>{if(!r.ok)throw 0;return r.json()}).then(show).catch(()=>fetch('/api/config').then(r=>r.json()).then(show));
 function mark(id,v){for(const b of $(id).children)b.classList.toggle('on',b.dataset.v==v)}
-function show(c){$('city').textContent=c.city;mark('unit',c.unit);mark('face',c.face);$('br').value=c.brightness;$('bv').textContent=c.brightness}
+function show(c){$('city').textContent=c.city;mark('unit',c.unit);mark('face',c.face);if(document.activeElement!==$('br')&&!t)$('br').value=c.brightness;$('bv').textContent=c.brightness}
 for(const id of['unit','face'])$(id).onclick=e=>{const v=e.target.dataset.v;if(v!=null)post({[id]:id=='face'?+v:v})};
-let t;$('br').oninput=e=>{$('bv').textContent=e.target.value;clearTimeout(t);t=setTimeout(()=>post({brightness:+e.target.value}),300)};
+$('br').oninput=e=>{$('bv').textContent=e.target.value;clearTimeout(t);t=setTimeout(()=>{t=0;post({brightness:+e.target.value})},300)};
 $('q').onkeydown=async e=>{
 if(e.key!='Enter')return;
 const r=$('res');r.textContent='...';

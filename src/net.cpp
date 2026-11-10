@@ -10,6 +10,7 @@ using fs::FS;
 #include <ESP8266HTTPUpdateServer.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
+#include <math.h>
 #include <WiFiClient.h>
 #include <WiFiManager.h>
 
@@ -57,28 +58,13 @@ static void handleConfigPost() {
     return;
   }
 
-  char buf[256];
-  if (serializeSettings(settings, buf, sizeof(buf)) == 0) {
-    sendError(500, "serialize failed");
-    return;
-  }
-  JsonDocument merged;
-  deserializeJson(merged, buf);
-  for (JsonPair kv : req.as<JsonObject>()) merged[kv.key()] = kv.value();
-
-  char mbuf[MAX_BODY + 256];
-  size_t n = serializeJson(merged, mbuf, sizeof(mbuf));
-  if (n == 0 || n >= sizeof(mbuf)) {
-    sendError(400, "too large");
-    return;
-  }
   Settings next;
-  if (!parseSettings(mbuf, next)) {
+  if (!parseSettingsOver(body.c_str(), settings, next)) {
     sendError(400, "invalid config");
     return;
   }
 
-  bool locChanged = next.lat != settings.lat || next.lon != settings.lon;
+  bool locChanged = fabsf(next.lat - settings.lat) > 1e-4f || fabsf(next.lon - settings.lon) > 1e-4f;
   bool faceChanged = locChanged || next.face != settings.face || next.unit != settings.unit ||
                      strcmp(next.city, settings.city) != 0;
   bool brightChanged = next.brightness != settings.brightness;
@@ -169,9 +155,10 @@ void netBegin() {
 #endif
   if (!ok) {
     WiFiManager wm;
-    wm.setConfigPortalTimeout(0);
+    wm.setConfigPortalTimeout(300);
+    wm.setAPClientCheck(true);
     wm.setAPCallback(onApMode);
-    wm.autoConnect("CYBERCLOCK-SETUP");
+    if (!wm.autoConnect("CYBERCLOCK-SETUP")) ESP.restart();
   }
 
   showMessage("ONLINE", WiFi.localIP().toString().c_str());

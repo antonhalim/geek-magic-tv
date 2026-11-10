@@ -17,6 +17,7 @@ void setup() {
   configLoad();
   showSplash();
   setBrightness(settings.brightness);  // showSplash forces 60 %
+  timeSprite();  // allocate the 10 KB sprite early, before the heap fragments
   netBegin();
   weatherRequestRefresh();
   // faceDirty starts true, so the first loop() selects and draws the face

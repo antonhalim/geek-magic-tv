@@ -12,11 +12,11 @@
 
 ## Global Constraints
 
-- Board `esp12e`, flash layout `eagle.flash.4m2m.ld`, `board_build.filesystem = littlefs`.
+- Board `esp12e`, flash layout `eagle.flash.4m1m.ld` (1 MB FS), `board_build.filesystem = littlefs`.
 - Display: ST7789 240×240, SCLK 14, MOSI 13, DC 0, RST 2, CS -1, SPI mode 3, 40 MHz, `TFT_INVERSION_ON`, `TFT_RGB_ORDER=TFT_BGR`. Backlight GPIO5 PWM, active-low.
 - Defaults: city `San Francisco`, lat `37.7749`, lon `-122.4194`, unit `F`, face `0`, brightness `80`.
 - Weather refresh 15 min; retry 60 s on failure; stale marker if last good data > 1 h.
-- Wi-Fi connect timeout 20 s, then AP `CYBERCLOCK-SETUP` (open, no portal timeout).
+- Wi-Fi connect timeout 20 s, then AP `CYBERCLOCK-SETUP` (open; portal closes after 5 min with no setup client, then the device reboots to retry Wi-Fi).
 - 24-hour time; `--:--` before first NTP sync.
 - Open-Meteo over plain HTTP only (`api.open-meteo.com`, `geocoding-api.open-meteo.com`).
 - `secrets.ini` gitignored; `secrets.ini.example` committed.

@@ -27,7 +27,7 @@ admin page. Reverting to stock must stay possible without a USB cable.
 
 ## Stack
 
-- PlatformIO, Arduino ESP8266 core, board `esp12e`, 4 MB layout with 2 MB FS.
+- PlatformIO, Arduino ESP8266 core, board `esp12e`, 4 MB flash, default `eagle.flash.4m1m.ld` layout (1 MB FS).
 - TFT_eSPI (ST7789 driver, configured via build flags, no `User_Setup.h` edits).
 - ArduinoJson v7, WiFiManager (tzapu), ESP8266WebServer,
   ESP8266HTTPUpdateServer, LittleFS.
@@ -46,7 +46,8 @@ buffer, and custom animation in YAML lambdas is awkward.
    credentials from a gitignored `secrets.ini`.
 5. If not connected within 20 s, WiFiManager opens AP `CYBERCLOCK-SETUP`
    (no password) with a captive portal. The screen shows the AP name and
-   `192.168.4.1`. Portal never times out.
+   `192.168.4.1`. The portal closes after 5 min with no setup client and the
+   device reboots to retry Wi-Fi.
 6. Once connected: show IP on screen for 3 s, start web server, NTP, weather.
 
 ### Time

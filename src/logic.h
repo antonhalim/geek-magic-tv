@@ -31,6 +31,7 @@ struct GeoResult {
 
 Settings defaultSettings();
 bool parseSettings(const char* json, Settings& out);
+bool parseSettingsOver(const char* json, const Settings& base, Settings& out);
 size_t serializeSettings(const Settings& s, char* buf, size_t len);
 bool parseWeather(const char* json, WeatherData& out);
 int parseGeocode(const char* json, GeoResult* out, int max);
