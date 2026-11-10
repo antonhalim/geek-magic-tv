@@ -18,10 +18,10 @@ static long appliedOffset = 0;
 static bool offsetApplied = false;
 
 static bool fetchWeather() {
-  char url[320];  // ~265 chars with the daily outlook fields
+  char url[352];  // ~300 chars with the daily outlook and wind fields
   snprintf(url, sizeof(url),
            "http://api.open-meteo.com/v1/forecast?latitude=%.4f&longitude=%.4f"
-           "&current=temperature_2m,relative_humidity_2m,weather_code"
+           "&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m"
            "&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max,precipitation_sum"
            "&timezone=auto&forecast_days=1",
            settings.lat, settings.lon);

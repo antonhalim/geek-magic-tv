@@ -15,6 +15,8 @@ struct FaceState {
   const char* label;
   const char* outlook;  // today's tag: STORM, SNOW, RAIN, DRY
   char precip[24];      // "58% TODAY // 0.29in"
+  int windDir;          // degrees FROM, -1 if unknown
+  char wind[24];        // "WIND SE 9mph"
   bool weatherValid;
   bool stale;
   int second;
@@ -28,6 +30,7 @@ class Face {
   virtual void begin() = 0;
   virtual void update(const FaceState& s, const FaceState& prev) = 0;
   virtual void tick(uint32_t ms) = 0;
+  virtual void end() {}  // free face-specific memory before another face starts
   virtual ~Face() {}
 };
 
@@ -35,6 +38,7 @@ Face* faceNetrunner();
 Face* faceTerminal();
 Face* faceVitals();
 Face* faceCorpo();
+Face* faceRadar();
 
 // ---- shared helpers (common.cpp) ----
 

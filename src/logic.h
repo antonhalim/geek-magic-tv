@@ -25,6 +25,8 @@ struct WeatherData {
   int dayCode;      // today's dominant WMO code
   int precipProb;   // today's max rain chance %, -1 if unknown
   float precipMm;   // today's expected total
+  float windKmh;
+  int windDir;      // degrees the wind comes FROM, -1 if unknown
   bool valid;
 };
 
@@ -48,6 +50,10 @@ const char* wmoLabel(int code);
 const char* dayOutlook(int dayCode, int precipProb, float precipMm);
 // e.g. "58% TODAY // 7.3mm" (C) or "58% TODAY // 0.29in" (F).
 void formatPrecip(int precipProb, float precipMm, char unit, char* out, size_t len);
+// 8-point compass name for a bearing in degrees.
+const char* windCompass(int deg);
+// "WIND SE 9mph" (F) / "WIND SE 14km/h" (C), "WIND --" if unknown.
+void formatWind(float kmh, int deg, char unit, char* out, size_t len);
 void formatTime(int h, int m, char* out);
 void formatDate(int wday, int mday, int mon, int year, char* out);
 void urlEncode(const char* in, char* out, size_t len);

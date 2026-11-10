@@ -48,10 +48,12 @@ void loop() {
 
   if (faceDirty || !face) {
     faceDirty = false;
+    if (face) face->end();
     switch (settings.face) {
       case 1: face = faceTerminal(); break;
       case 2: face = faceVitals(); break;
       case 3: face = faceCorpo(); break;
+      case 4: face = faceRadar(); break;
       default: face = faceNetrunner();
     }
     face->begin();

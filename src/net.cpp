@@ -121,6 +121,7 @@ static void handleStatus() {
   doc["rssi"] = WiFi.RSSI();
   doc["uptime"] = millis() / 1000;
   doc["heap"] = ESP.getFreeHeap();
+  doc["maxBlock"] = ESP.getMaxFreeBlockSize();
   JsonObject w = doc["weather"].to<JsonObject>();
   w["valid"] = weather.valid;
   w["tempC"] = weather.tempC;

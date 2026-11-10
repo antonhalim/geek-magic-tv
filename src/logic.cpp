@@ -50,7 +50,7 @@ bool parseSettingsOver(const char* json, const Settings& base, Settings& out) {
 
   if (doc["face"].is<int>()) {
     int f = doc["face"];
-    if (f >= 0 && f <= 3) out.face = static_cast<uint8_t>(f);
+    if (f >= 0 && f <= 4) out.face = static_cast<uint8_t>(f);
   }
   if (doc["brightness"].is<int>()) {
     int b = doc["brightness"];
@@ -105,6 +105,8 @@ bool parseWeather(const char* json, WeatherData& out) {
   w.dayCode = doc["daily"]["weather_code"][0] | w.code;
   w.precipProb = doc["daily"]["precipitation_probability_max"][0] | -1;
   w.precipMm = doc["daily"]["precipitation_sum"][0] | 0.0f;
+  w.windKmh = cur["wind_speed_10m"] | 0.0f;
+  w.windDir = cur["wind_direction_10m"].is<int>() ? cur["wind_direction_10m"].as<int>() : -1;
   w.valid = true;
   out = w;
   return true;
@@ -233,5 +235,21 @@ void formatPrecip(int precipProb, float precipMm, char unit, char* out, size_t l
     snprintf(out, len, "%d%% TODAY // %.2fin", precipProb, precipMm / 25.4f);
   } else {
     snprintf(out, len, "%d%% TODAY // %.1fmm", precipProb, precipMm);
+  }
+}
+
+const char* windCompass(int deg) {
+  static const char* const names[] = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"};
+  deg = ((deg % 360) + 360) % 360;
+  return names[((deg * 2 + 45) / 90) % 8];
+}
+
+void formatWind(float kmh, int deg, char unit, char* out, size_t len) {
+  if (deg < 0) {
+    snprintf(out, len, "WIND --");
+  } else if (unit == 'F') {
+    snprintf(out, len, "WIND %s %dmph", windCompass(deg), (int)std::lround(kmh * 0.621371f));
+  } else {
+    snprintf(out, len, "WIND %s %dkm/h", windCompass(deg), (int)std::lround(kmh));
   }
 }

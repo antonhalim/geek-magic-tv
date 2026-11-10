@@ -115,6 +115,8 @@ void test_face_vitals() {
   TEST_ASSERT_TRUE(parseSettings("{\"face\":3}", s));
   TEST_ASSERT_EQUAL(3, s.face);  // corpo
   TEST_ASSERT_TRUE(parseSettings("{\"face\":4}", s));
+  TEST_ASSERT_EQUAL(4, s.face);  // radar
+  TEST_ASSERT_TRUE(parseSettings("{\"face\":5}", s));
   TEST_ASSERT_EQUAL(0, s.face);
 }
 
@@ -137,6 +139,28 @@ void test_format_precip() {
   TEST_ASSERT_EQUAL_STRING("58% TODAY // 0.29in", out);
   formatPrecip(-1, 0, 'F', out, sizeof(out));
   TEST_ASSERT_EQUAL_STRING("-- TODAY", out);
+}
+
+
+void test_wind() {
+  WeatherData w = {};
+  TEST_ASSERT_TRUE(parseWeather(FORECAST_DAY_JSON, w));
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 13.7f, w.windKmh);
+  TEST_ASSERT_EQUAL_INT(146, w.windDir);
+  TEST_ASSERT_TRUE(parseWeather(FORECAST_JSON, w));  // no wind fields
+  TEST_ASSERT_EQUAL_INT(-1, w.windDir);
+  TEST_ASSERT_EQUAL_STRING("N", windCompass(0));
+  TEST_ASSERT_EQUAL_STRING("N", windCompass(359));
+  TEST_ASSERT_EQUAL_STRING("SE", windCompass(146));
+  TEST_ASSERT_EQUAL_STRING("SW", windCompass(225));
+  TEST_ASSERT_EQUAL_STRING("W", windCompass(270));
+  char out[24];
+  formatWind(13.7f, 146, 'F', out, sizeof(out));
+  TEST_ASSERT_EQUAL_STRING("WIND SE 9mph", out);
+  formatWind(13.7f, 146, 'C', out, sizeof(out));
+  TEST_ASSERT_EQUAL_STRING("WIND SE 14km/h", out);
+  formatWind(0, -1, 'F', out, sizeof(out));
+  TEST_ASSERT_EQUAL_STRING("WIND --", out);
 }
 
 void test_parse_weather_bad() {
@@ -267,6 +291,7 @@ int main() {
   RUN_TEST(test_format);
   RUN_TEST(test_parse_weather);
   RUN_TEST(test_parse_weather_bad);
+  RUN_TEST(test_wind);
   RUN_TEST(test_parse_weather_day);
   RUN_TEST(test_face_vitals);
   RUN_TEST(test_day_outlook);

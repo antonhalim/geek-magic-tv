@@ -31,6 +31,8 @@ void buildFaceState(FaceState& s) {
   s.label = weather.valid ? wmoLabel(weather.code) : "NO SIGNAL";
   s.outlook = weather.valid ? dayOutlook(weather.dayCode, weather.precipProb, weather.precipMm) : "----";
   formatPrecip(weather.valid ? weather.precipProb : -1, weather.precipMm, s.unit, s.precip, sizeof(s.precip));
+  s.windDir = weather.valid ? weather.windDir : -1;
+  formatWind(weather.windKmh, s.windDir, s.unit, s.wind, sizeof(s.wind));
 }
 
 TFT_eSprite& timeSprite() {
@@ -109,5 +111,6 @@ static bool strEq(const char* a, const char* b) {
 bool weatherChanged(const FaceState& a, const FaceState& b) {
   return a.temp != b.temp || a.hi != b.hi || a.lo != b.lo || a.humidity != b.humidity ||
          a.unit != b.unit || a.weatherValid != b.weatherValid || a.stale != b.stale ||
-         !strEq(a.label, b.label) || !strEq(a.outlook, b.outlook) || strcmp(a.precip, b.precip) != 0;
+         !strEq(a.label, b.label) || !strEq(a.outlook, b.outlook) || strcmp(a.precip, b.precip) != 0 ||
+         a.windDir != b.windDir || strcmp(a.wind, b.wind) != 0;
 }
