@@ -67,6 +67,8 @@
 #define X_RED 0xC885       // #C8102E
 #define X_GLASS 0x2947     // #2A2A38
 #define X_CREAM 0xEF19     // #E8E0C8
+#define X_GREEN 0x3CC7     // #3A9A3A New Territories taxi
+#define X_BLUE 0x2BDA      // #2A7AD0 Lantau taxi
 // tram
 #define T_GREEN 0x2BE9     // #2E7D4F
 #define T_ROOF 0x1AC7      // #1C5A38
@@ -102,6 +104,11 @@ static bool lightOn[5];
 static bool jiaOn = true;  // 家 on the 酒家 sign sputters
 static int reflJ = 0;      // reflection wobble
 static int tramX = NO_TRAM;
+static int taxiX = NO_TRAM;  // a taxi drives by between trams, never alongside one
+static uint16_t taxiColor = X_RED;
+static bool taxiRight = true;  // heading left to right
+static const int TAXI_Y = 196, TAXI_LEN = 36, TAXI_SPEED = 110;
+static const int TAXI_RUN_MS = (240 + TAXI_LEN + 24) * 1000 / TAXI_SPEED;
 static uint8_t precip = 0;  // 0 none, 1 rain, 2 snow
 static float dropX[DROPS], dropY[DROPS];
 
@@ -216,11 +223,11 @@ static void drawScene(Canvas& cv) {
   // building wall closing the street
   cv.rect(84, 98, 72, 70, H_FACADE);
   static const uint16_t FACWIN[4] = {H_GOLD, H_WARM, H_CYANLT, H_PINK};
-  for (int wy = 101; wy < 166; wy += 4) {
+  for (int wy = 102; wy < 166; wy += 5) {  // sparse, so the signs in front stay the focus
     if (!cv.hits(wy, 2)) continue;
-    for (int wx = 86; wx < 155; wx += 3) {
+    for (int wx = 87; wx < 154; wx += 4) {
       uint32_t h = cellHash(wx, wy);
-      cv.rect(wx, wy, 2, 2, h % 5 < 2 ? FACWIN[(h >> 4) & 3] : H_WINDARK);
+      cv.rect(wx, wy, 2, 2, h % 7 == 0 ? FACWIN[(h >> 4) & 3] : H_LEDGE);
     }
   }
 
@@ -351,7 +358,7 @@ static void drawScene(Canvas& cv) {
     px = x; py = y;
   }
 
-  // street, rails, a red taxi at the kerb
+  // street and rails
   for (int y = max(168, cv.y0); y < min(HUD_Y, cv.y1); y++) {
     int w = y < 206 ? (206 - y) * 84 / 38 : 0;
     cv.hline(w, y, 240 - 2 * w, H_STREET);
@@ -360,16 +367,6 @@ static void drawScene(Canvas& cv) {
   cv.line(104, 168, 62, 213, H_RAIL);
   cv.line(136, 168, 178, 213, H_RAIL);
   cv.line(142, 168, 196, 213, H_RAIL);
-
-  cv.rect(16, 191, 14, 2, X_RED);
-  cv.rect(10, 193, 26, 3, X_RED);
-  cv.rect(6, 196, 36, 7, X_RED);
-  cv.rect(13, 193, 19, 2, X_GLASS);
-  cv.rect(18, 188, 8, 3, TFT_WHITE);
-  cv.hline(6, 197, 36, X_CREAM);
-  cv.dot(13, 203, 2, TFT_BLACK);
-  cv.dot(36, 203, 2, TFT_BLACK);
-  cv.rect(40, 198, 2, 2, H_GOLD);
 
   // neon on the wet street
   static const struct { uint8_t x; uint8_t y; uint16_t c; } REF[] = {
@@ -473,9 +470,27 @@ static void drawPrecip(Canvas& cv) {
   }
 }
 
+static void drawTaxi(Canvas& cv, int x) {  // x = left end of the body
+  int y = TAXI_Y;
+  auto R = [x](int dx, int w) { return taxiRight ? x + TAXI_LEN - dx - w : x + dx; };  // dx from the nose
+  int nose = taxiRight ? x + TAXI_LEN : x, ahead = taxiRight ? 22 : -22;
+  cv.tri(nose, y + 9, nose + ahead, y + 6, nose + ahead, y + 15, T_BEAM);
+  cv.rect(R(16, 8), y, 8, 3, TFT_WHITE);  // TAXI roof sign
+  cv.rect(R(12, 14), y + 3, 14, 2, taxiColor);
+  cv.rect(R(6, 26), y + 5, 26, 3, taxiColor);
+  cv.rect(R(10, 19), y + 5, 19, 2, X_GLASS);
+  cv.rect(x, y + 8, TAXI_LEN, 7, taxiColor);
+  cv.hline(x, y + 9, TAXI_LEN, X_CREAM);
+  cv.dot(R(6, 1), y + 15, 2, TFT_BLACK);
+  cv.dot(R(29, 1), y + 15, 2, TFT_BLACK);
+  cv.rect(R(0, 2), y + 10, 2, 2, H_GOLD);
+  cv.rect(R(TAXI_LEN - 2, 2), y + 10, 2, 2, H_RED);
+}
+
 static void drawAll(Canvas& cv) {
   drawScene(cv);
   if (tramX != NO_TRAM) drawTram(cv, tramX);
+  if (taxiX != NO_TRAM) drawTaxi(cv, taxiX);
   drawPrecip(cv);
 }
 
@@ -488,7 +503,7 @@ class HongKong : public Face {
     box.setColorDepth(16);
     boxOk = box.createSprite(BOX_W, BOX_H) != nullptr;
 
-    tramX = NO_TRAM;
+    tramX = taxiX = NO_TRAM;
     precip = 0;
     jiaOn = true;
     for (bool& b : lightOn) b = false;
@@ -496,7 +511,7 @@ class HongKong : public Face {
     drawScene(cv);
     drawHud();
     timeStr[0] = '\0';
-    tramShown = false;
+    tramShown = taxiShown = false;
     shownNext = -1;
   }
 
@@ -545,6 +560,7 @@ class HongKong : public Face {
     int msIntoMinute = msIntoMin(ms);
     bool running = msIntoMinute < TRAM_RUN_MS;
     tramX = running ? TRAM_START + msIntoMinute * TRAM_SPEED / 1000 : NO_TRAM;
+    updateTaxi(msIntoMinute);
 
     int oldX[DROPS], oldY[DROPS];
     bool respawned[DROPS] = {};
@@ -556,6 +572,8 @@ class HongKong : public Face {
       tramShown = running;
       bandPainted = true;
     }
+    if (!bandPainted && (taxiX != NO_TRAM || taxiShown)) repaintRows(TAXI_Y - 2, BAND_END);
+    taxiShown = taxiX != NO_TRAM;
     if (precip) {
       for (int i = 0; i < DROPS; i++) {
         if (respawned[i]) {  // clear the old spot, then draw at the new one
@@ -582,9 +600,25 @@ class HongKong : public Face {
   TFT_eSprite box = TFT_eSprite(&tft);
   bool bandOk = false, boxOk = false;
   char timeStr[9] = "";
-  bool tramShown = false;
+  bool tramShown = false, taxiShown = false;
   int shownNext = -1;
   uint32_t lastShimmer = 0, nextFlicker = 0;
+
+  // Taxis pass at :15, :25, :35 and :45, well clear of the tram (:00 to :09),
+  // alternating left to right and right to left.
+  void updateTaxi(int msIntoMinute) {
+    static const uint16_t COLORS[4] = {X_RED, X_GREEN, X_RED, X_BLUE};
+    taxiX = NO_TRAM;
+    for (int i = 0; i < 4; i++) {
+      int t = msIntoMinute - (15000 + i * 10000);
+      if (t >= 0 && t < TAXI_RUN_MS) {
+        int d = t * TAXI_SPEED / 1000;
+        taxiRight = i % 2 == 0;
+        taxiX = taxiRight ? -(TAXI_LEN + 24) + d : 240 - d;
+        taxiColor = COLORS[i];
+      }
+    }
+  }
 
   int msIntoMin(uint32_t ms) {
     if (!timeSynced()) return (int)(ms % 60000);
