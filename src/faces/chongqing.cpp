@@ -300,6 +300,14 @@ class Chongqing : public Face {
       tft.drawString(timeStr, 10, 6, 4);
       tft.setTextPadding(0);
     }
+    if (strcmp(s.city, prev.city) != 0) {  // your city, not Chongqing: that lives on the signs
+      char city[48];
+      fitLabel(s.city, city, sizeof(city), 92, textWidth2);
+      tft.fillRect(10, 34, 94, 16, Q_BG);
+      tft.setTextDatum(TL_DATUM);
+      tft.setTextColor(Q_MAGENTA, Q_BG);
+      tft.drawString(city, 10, 34, 2);
+    }
     if (strcmp(s.date, prev.date) != 0) {
       char d[12];
       snprintf(d, sizeof(d), "%.10s", s.date);
@@ -361,12 +369,6 @@ class Chongqing : public Face {
 
   void drawHud() {
     Canvas cv{tft, 0, 0, 0, 240};
-    cv.glyph(CJK_ZHONG, 10, 34, Q_MAGENTA);
-    cv.glyph(CJK_QING, 26, 34, Q_MAGENTA);
-    tft.setTextDatum(TL_DATUM);
-    tft.setTextColor(Q_MAGENTA, Q_BG);
-    tft.drawString("CHONGQING", 46, 41, 1);
-
     // ATMOS chip
     tft.drawRect(178, 6, 54, 44, Q_CYAN);
     tft.fillRect(178, 6, 54, 10, Q_CYAN);
