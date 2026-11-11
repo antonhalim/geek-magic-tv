@@ -42,6 +42,7 @@ Face* faceCorpo();
 Face* faceRadar();
 Face* faceChongqing();
 Face* faceHongKong();
+Face* faceShibuya();
 
 // ---- shared helpers (common.cpp) ----
 

@@ -1,9 +1,10 @@
-"""Render the Chinese characters the faces need into 1-bit bitmaps.
+"""Render the Chinese and Japanese characters the faces need into 1-bit bitmaps.
 
 Usage:
   python gen_glyphs.py <NotoSansSC.ttf> sc > ../src/faces/cjk_glyphs.h   (Chongqing, simplified)
   python gen_glyphs.py <NotoSansTC.ttf> tc > ../src/faces/hk_glyphs.h    (Hong Kong, traditional)
-Needs Pillow. Use Noto Sans SC / TC (SIL Open Font License); a Google Fonts subset
+  python gen_glyphs.py <NotoSansJP.ttf> jp > ../src/faces/jp_glyphs.h    (Shibuya, Japanese)
+Needs Pillow. Use Noto Sans SC / TC / JP (SIL Open Font License); a Google Fonts subset
 with just these characters is enough:
 https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@500&text=<chars>
 """
@@ -28,6 +29,17 @@ SETS = {
             ("DIAN", "電"), ("CHE", "車"), ("TIAN", "天"), ("QI", "氣"),
             ("SUNNY", "晴"), ("CLOUD", "雲"), ("OVERCAST", "陰"), ("FOG", "霧"),
             ("RAIN", "雨"), ("SNOW", "雪"), ("THUNDER", "雷"),
+        ],
+    },
+    "jp": {
+        "font": "Noto Sans JP", "enum": "JpGlyph", "prefix": "JP", "sizes": [16, 12],
+        "glyphs": [
+            ("RA", "ラ"), ("ME", "メ"), ("N", "ン"), ("KA", "カ"), ("O", "オ"), ("KE", "ケ"),
+            ("I", "居"), ("SAKA", "酒"), ("YA", "屋"), ("TOU", "東"), ("KYOU", "京"),
+            ("SHIBU", "渋"), ("YA_VALLEY", "谷"), ("TEN", "天"), ("KI", "気"),
+            ("SUNNY", "晴"), ("CLOUD", "曇"), ("OVERCAST", "曇"), ("FOG", "霧"),
+            ("RAIN", "雨"), ("SNOW", "雪"), ("THUNDER", "雷"),
+            ("SUN", "日"), ("MON", "月"), ("TUE", "火"), ("WED", "水"), ("THU", "木"), ("FRI", "金"), ("SAT", "土"),
         ],
     },
 }
