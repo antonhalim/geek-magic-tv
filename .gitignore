@@ -3,3 +3,5 @@ secrets.ini
 .superpowers/
 .DS_Store
 __pycache__/
+sim/.build/
+sim/cyberclock-sim

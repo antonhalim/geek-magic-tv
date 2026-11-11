@@ -1,0 +1,59 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CYBERCLOCK simulator</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:16px;background:#05080a;color:#cfe;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace}
+.wrap{display:flex;flex-wrap:wrap;gap:24px;justify-content:center;align-items:flex-start}
+.bezel{background:#f39a1e;padding:22px;border-radius:18px}
+canvas{display:block;width:480px;height:480px;max-width:calc(100vw - 76px);max-height:calc(100vw - 76px);image-rendering:pixelated;background:#000}
+.panel{width:300px;max-width:100%}
+h1{color:#00f0ff;font-size:18px;letter-spacing:4px;margin:0 0 12px}
+h2{margin:14px 0 6px;font-size:11px;letter-spacing:3px;color:#ff2bd6;text-transform:uppercase}
+.seg{display:flex;flex-wrap:wrap;gap:6px}.seg button{flex:1 1 30%}
+button{background:#000;color:#00f0ff;border:1px solid #00f0ff;padding:6px 8px;font:inherit;cursor:pointer}
+button.on{background:#00f0ff;color:#000}
+input{width:100%;background:#000;color:#00f0ff;border:1px solid #ff2bd6;padding:6px;font:inherit}
+input[type=range]{border:0;accent-color:#ff2bd6;padding:0}
+.k{color:#7aa}
+</style></head><body>
+<div class="wrap">
+<div class="bezel"><canvas id="c" width="240" height="240"></canvas></div>
+<div class="panel">
+<h1>CYBERCLOCK SIM</h1>
+<h2>Face</h2>
+<div class="seg" id="face"><button data-v="0">NETRUNNER</button><button data-v="1">TERMINAL</button><button data-v="2">VITALS</button><button data-v="3">CORPO</button><button data-v="4">RADAR</button><button data-v="5">CHONGQING</button><button data-v="6">HONG KONG</button></div>
+<h2>Weather</h2>
+<div class="seg" id="code"><button data-v="0">CLEAR</button><button data-v="2">CLOUDY</button><button data-v="3">OVERCAST</button><button data-v="45">FOG</button><button data-v="61">RAIN</button><button data-v="71">SNOW</button><button data-v="95">STORM</button></div>
+<div class="k" style="margin-top:8px">Temp <span id="tv"></span> °C</div>
+<input type="range" id="temp" min="-20" max="40">
+<h2>Unit</h2>
+<div class="seg" id="unit"><button data-v="C">°C</button><button data-v="F">°F</button></div>
+<h2>City</h2>
+<input id="city" maxlength="47" placeholder="Enter to apply">
+<h2>Time</h2>
+<div class="seg" id="jump"><button data-v="55">TO :55</button><button data-v="12">TO :12</button><button data-v="22">TO :22</button><button data-v="r">REAL TIME</button></div>
+<div class="k" style="margin-top:6px">Jump a few seconds before the train or tram (:00) or a taxi (:15, :25 ...).</div>
+</div></div>
+<script>
+const $=id=>document.getElementById(id), ctx=$('c').getContext('2d'), img=ctx.createImageData(240,240);
+function mark(id,v){for(const b of $(id).children)b.classList.toggle('on',b.dataset.v==v)}
+function show(s){mark('face',s.face);mark('code',s.code);mark('unit',s.unit);$('temp').value=s.tempC;$('tv').textContent=s.tempC;
+  if(document.activeElement!==$('city'))$('city').value=s.city}
+const set=q=>fetch('/set?'+new URLSearchParams(q)).then(r=>r.json()).then(show);
+for(const id of['face','code','unit'])$(id).onclick=e=>{const v=e.target.dataset.v;if(v!=null)set({[id]:v})};
+$('jump').onclick=e=>{const v=e.target.dataset.v;if(v!=null)set(v=='r'?{resetTime:1}:{second:v})};
+$('temp').oninput=e=>{$('tv').textContent=e.target.value};$('temp').onchange=e=>set({tempC:e.target.value});
+$('city').onkeydown=e=>{if(e.key=='Enter')set({city:e.target.value})};
+async function frame(){
+  try{
+    const px=new Uint16Array(await (await fetch('/frame')).arrayBuffer()), d=img.data;
+    for(let i=0;i<px.length;i++){const c=px[i];
+      d[i*4]=((c>>11)&31)*255/31;d[i*4+1]=((c>>5)&63)*255/63;d[i*4+2]=(c&31)*255/31;d[i*4+3]=255}
+    ctx.putImageData(img,0,0);
+  }catch(e){}
+  setTimeout(frame,50);
+}
+const poll=()=>fetch('/state').then(r=>r.json()).then(show).catch(()=>{});
+poll();setInterval(poll,1000);frame();
+</script></body></html>
