@@ -55,6 +55,7 @@ void loop() {
       case 3: face = faceCorpo(); break;
       case 4: face = faceRadar(); break;
       case 5: face = faceChongqing(); break;
+      case 6: face = faceHongKong(); break;
       default: face = faceNetrunner();
     }
     face->begin();

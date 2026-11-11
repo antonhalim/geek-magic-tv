@@ -50,7 +50,7 @@ bool parseSettingsOver(const char* json, const Settings& base, Settings& out) {
 
   if (doc["face"].is<int>()) {
     int f = doc["face"];
-    if (f >= 0 && f <= 5) out.face = static_cast<uint8_t>(f);
+    if (f >= 0 && f <= 6) out.face = static_cast<uint8_t>(f);
   }
   if (doc["brightness"].is<int>()) {
     int b = doc["brightness"];

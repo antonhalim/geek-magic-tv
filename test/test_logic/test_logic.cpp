@@ -119,6 +119,8 @@ void test_face_vitals() {
   TEST_ASSERT_TRUE(parseSettings("{\"face\":5}", s));
   TEST_ASSERT_EQUAL(5, s.face);  // chongqing
   TEST_ASSERT_TRUE(parseSettings("{\"face\":6}", s));
+  TEST_ASSERT_EQUAL(6, s.face);  // hong kong
+  TEST_ASSERT_TRUE(parseSettings("{\"face\":7}", s));
   TEST_ASSERT_EQUAL(0, s.face);
 }
 
