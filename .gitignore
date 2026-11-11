@@ -5,3 +5,4 @@ secrets.ini
 __pycache__/
 sim/.build/
 sim/cyberclock-sim
+sim/cyberclock-sim.dSYM/
