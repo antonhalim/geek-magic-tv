@@ -49,6 +49,7 @@ Face* faceChongqing();
 #define TIME_W 224
 #define TIME_H 52
 TFT_eSprite& timeSprite();
+void freeTimeSprite();  // faces that need the RAM call this; timeSprite() re-creates it
 
 // Colour as it appears after an 8-bit sprite round trip, so screen areas
 // drawn directly match the sprite background exactly.

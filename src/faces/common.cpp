@@ -36,8 +36,13 @@ void buildFaceState(FaceState& s) {
   formatWind(weather.windKmh, s.windDir, s.unit, s.wind, sizeof(s.wind));
 }
 
+static TFT_eSprite spr(&tft);
+
+void freeTimeSprite() {
+  if (spr.created()) spr.deleteSprite();
+}
+
 TFT_eSprite& timeSprite() {
-  static TFT_eSprite spr(&tft);
   if (!spr.created()) {
     spr.setColorDepth(8);
     spr.createSprite(TIME_W, TIME_H);

@@ -42,7 +42,7 @@ static float frand(float a, float b) { return a + (b - a) * (random(10001) / 100
 class Radar : public Face {
  public:
   void begin() override {
-    timeSprite().deleteSprite();  // the scope needs that RAM; other faces re-create it
+    freeTimeSprite();  // the scope needs that RAM; other faces re-create it
     scope.setColorDepth(4);
     memOk = scope.createSprite(SPR, SPR) != nullptr;
     if (memOk) scope.createPalette(PALETTE);

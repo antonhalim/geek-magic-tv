@@ -54,6 +54,7 @@
 
 // ---- layout ----
 static const int BAND_Y = 132, BAND_H = 36;  // train band, redrawn while a train passes
+static const int STRIP_H = 12;               // painted in strips through one small sprite
 static const int TRACK_Y = 162;
 static const int TRAIN_LEN = 81;
 static const int TRAIN_SPEED = 64;  // px/s; a pass takes ~5.5 s, starting each minute
@@ -265,9 +266,9 @@ static void drawTrain(Canvas& cv, int n) {  // n = x of the nose tip
 class Chongqing : public Face {
  public:
   void begin() override {
-    timeSprite().deleteSprite();  // the train band needs that RAM; other faces re-create it
+    freeTimeSprite();  // the train band needs that RAM; other faces re-create it
     band.setColorDepth(16);
-    bandOk = band.createSprite(240, BAND_H) != nullptr;
+    bandOk = band.createSprite(240, STRIP_H) != nullptr;  // 5.8 KB, fits fragmented heap
     cab.setColorDepth(16);
     cabOk = cab.createSprite(CAB_W, CAB_H) != nullptr;
 
@@ -414,10 +415,13 @@ class Chongqing : public Face {
   void runTrain(int msIntoMinute) {
     bool running = msIntoMinute < TRAIN_RUN_MS;
     if (!bandOk || (!running && !trainShown)) return;
-    Canvas cv{band, 0, -BAND_Y, BAND_Y, BAND_Y + BAND_H};
-    drawScene(cv);
-    if (running) drawTrain(cv, -10 + msIntoMinute * TRAIN_SPEED / 1000);
-    band.pushSprite(0, BAND_Y);
+    int nose = -10 + msIntoMinute * TRAIN_SPEED / 1000;
+    for (int sy = BAND_Y; sy < BAND_Y + BAND_H; sy += STRIP_H) {
+      Canvas cv{band, 0, -sy, sy, sy + STRIP_H};
+      drawScene(cv);
+      if (running) drawTrain(cv, nose);
+      band.pushSprite(0, sy);
+    }
     trainShown = running;
     if (!running) zhanOn = false;  // repaint restored the dim tube
   }
