@@ -60,6 +60,10 @@ char militaryZone(long offsetSec);
 void formatUtcOffset(long offsetSec, char* out, size_t len);
 // Date-time group, e.g. "DTG 101418U NOV 26" (mon0 is 0-based).
 void formatDtg(int mday, int hour, int min, char zone, int mon0, int year, char* out, size_t len);
+// Weather category for the Chinese-character faces; order matches the CJK weather glyphs.
+enum CnWeather { CNW_SUNNY, CNW_CLOUD, CNW_OVERCAST, CNW_FOG, CNW_RAIN, CNW_SNOW, CNW_THUNDER };
+CnWeather cnWeather(int wmoCode);
+const char* cnWeatherLabel(CnWeather w);  // CLEAR, CLOUDY, OVERCAST, FOG, RAIN, SNOW, STORM
 void formatTime(int h, int m, char* out);
 void formatDate(int wday, int mday, int mon, int year, char* out);
 void urlEncode(const char* in, char* out, size_t len);

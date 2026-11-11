@@ -29,6 +29,7 @@ void buildFaceState(FaceState& s) {
   s.lo = toDisplayTemp(weather.loC, s.unit);
   s.humidity = weather.humidity;
   s.label = weather.valid ? wmoLabel(weather.code) : "NO SIGNAL";
+  s.code = weather.valid ? weather.code : -1;
   s.outlook = weather.valid ? dayOutlook(weather.dayCode, weather.precipProb, weather.precipMm) : "----";
   formatPrecip(weather.valid ? weather.precipProb : -1, weather.precipMm, s.unit, s.precip, sizeof(s.precip));
   s.windDir = weather.valid ? weather.windDir : -1;

@@ -50,7 +50,7 @@ bool parseSettingsOver(const char* json, const Settings& base, Settings& out) {
 
   if (doc["face"].is<int>()) {
     int f = doc["face"];
-    if (f >= 0 && f <= 4) out.face = static_cast<uint8_t>(f);
+    if (f >= 0 && f <= 5) out.face = static_cast<uint8_t>(f);
   }
   if (doc["brightness"].is<int>()) {
     int b = doc["brightness"];
@@ -279,4 +279,19 @@ void formatDtg(int mday, int hour, int min, char zone, int mon0, int year, char*
                                     "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
   snprintf(out, len, "DTG %02d%02d%02d%c %s %02d", mday, hour, min, zone, MON[((mon0 % 12) + 12) % 12],
            year % 100);
+}
+
+CnWeather cnWeather(int c) {
+  if (c >= 95) return CNW_THUNDER;
+  if ((c >= 71 && c <= 77) || c == 85 || c == 86) return CNW_SNOW;
+  if ((c >= 51 && c <= 67) || (c >= 80 && c <= 82)) return CNW_RAIN;
+  if (c == 45 || c == 48) return CNW_FOG;
+  if (c == 3) return CNW_OVERCAST;
+  if (c == 2) return CNW_CLOUD;
+  return CNW_SUNNY;
+}
+
+const char* cnWeatherLabel(CnWeather w) {
+  static const char* const L[] = {"CLEAR", "CLOUDY", "OVERCAST", "FOG", "RAIN", "SNOW", "STORM"};
+  return L[w];
 }

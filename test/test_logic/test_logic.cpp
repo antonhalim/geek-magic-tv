@@ -117,6 +117,8 @@ void test_face_vitals() {
   TEST_ASSERT_TRUE(parseSettings("{\"face\":4}", s));
   TEST_ASSERT_EQUAL(4, s.face);  // radar
   TEST_ASSERT_TRUE(parseSettings("{\"face\":5}", s));
+  TEST_ASSERT_EQUAL(5, s.face);  // chongqing
+  TEST_ASSERT_TRUE(parseSettings("{\"face\":6}", s));
   TEST_ASSERT_EQUAL(0, s.face);
 }
 
@@ -183,6 +185,22 @@ void test_military_time() {
   TEST_ASSERT_EQUAL_STRING("UTC", out);
   formatDtg(10, 14, 18, 'U', 10, 2026, out, sizeof(out));
   TEST_ASSERT_EQUAL_STRING("DTG 101418U NOV 26", out);
+}
+
+
+void test_cn_weather() {
+  TEST_ASSERT_EQUAL(CNW_SUNNY, cnWeather(0));
+  TEST_ASSERT_EQUAL(CNW_SUNNY, cnWeather(1));
+  TEST_ASSERT_EQUAL(CNW_CLOUD, cnWeather(2));
+  TEST_ASSERT_EQUAL(CNW_OVERCAST, cnWeather(3));
+  TEST_ASSERT_EQUAL(CNW_FOG, cnWeather(45));
+  TEST_ASSERT_EQUAL(CNW_RAIN, cnWeather(53));
+  TEST_ASSERT_EQUAL(CNW_RAIN, cnWeather(81));
+  TEST_ASSERT_EQUAL(CNW_SNOW, cnWeather(73));
+  TEST_ASSERT_EQUAL(CNW_SNOW, cnWeather(86));
+  TEST_ASSERT_EQUAL(CNW_THUNDER, cnWeather(95));
+  TEST_ASSERT_EQUAL_STRING("FOG", cnWeatherLabel(CNW_FOG));
+  TEST_ASSERT_EQUAL_STRING("STORM", cnWeatherLabel(CNW_THUNDER));
 }
 
 void test_parse_weather_bad() {
@@ -289,7 +307,7 @@ void test_parse_over_keeps_base() {
   base.face = 1;
   base.unit = 'C';
   Settings o;
-  TEST_ASSERT_TRUE(parseSettingsOver("{\"face\":5,\"unit\":\"K\"}", base, o));
+  TEST_ASSERT_TRUE(parseSettingsOver("{\"face\":9,\"unit\":\"K\"}", base, o));
   TEST_ASSERT_EQUAL_UINT8(1, o.face);
   TEST_ASSERT_EQUAL_CHAR('C', o.unit);
   TEST_ASSERT_TRUE(parseSettingsOver("{\"brightness\":500}", base, o));
@@ -315,6 +333,7 @@ int main() {
   RUN_TEST(test_parse_weather_bad);
   RUN_TEST(test_wind);
   RUN_TEST(test_military_time);
+  RUN_TEST(test_cn_weather);
   RUN_TEST(test_parse_weather_day);
   RUN_TEST(test_face_vitals);
   RUN_TEST(test_day_outlook);

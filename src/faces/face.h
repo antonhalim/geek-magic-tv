@@ -13,6 +13,7 @@ struct FaceState {
   int humidity;
   char unit;
   const char* label;
+  int code;             // current WMO weather code, -1 if unknown
   const char* outlook;  // today's tag: STORM, SNOW, RAIN, DRY
   char precip[24];      // "58% TODAY // 0.29in"
   int windDir;          // degrees FROM, -1 if unknown
@@ -39,6 +40,7 @@ Face* faceTerminal();
 Face* faceVitals();
 Face* faceCorpo();
 Face* faceRadar();
+Face* faceChongqing();
 
 // ---- shared helpers (common.cpp) ----
 
