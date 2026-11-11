@@ -216,6 +216,7 @@ static Face* pick(int i) {
     case 6: return faceHongKong();
     case 7: return faceShibuya();
     case 8: return faceOrbit();
+    case 9: return faceNeoLA();
     default: return faceNetrunner();
   }
 }

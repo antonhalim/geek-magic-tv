@@ -44,6 +44,7 @@ Face* faceChongqing();
 Face* faceHongKong();
 Face* faceShibuya();
 Face* faceOrbit();
+Face* faceNeoLA();
 
 // ---- shared helpers (common.cpp) ----
 
