@@ -123,6 +123,8 @@ void test_face_vitals() {
   TEST_ASSERT_TRUE(parseSettings("{\"face\":7}", s));
   TEST_ASSERT_EQUAL(7, s.face);  // shibuya
   TEST_ASSERT_TRUE(parseSettings("{\"face\":8}", s));
+  TEST_ASSERT_EQUAL(8, s.face);  // orbit
+  TEST_ASSERT_TRUE(parseSettings("{\"face\":9}", s));
   TEST_ASSERT_EQUAL(0, s.face);
 }
 

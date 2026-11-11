@@ -172,10 +172,10 @@ static void handle(int fd) {
     if (!(v = param(query, "tempC")).empty()) temp = (float)atof(v.c_str());
     setWeather(code, temp);
     if (!(v = param(query, "second")).empty()) {  // jump so the clock reads this second
-      timeOffset = 0;
       long now = (long)sim_time(nullptr), want = atol(v.c_str());
-      timeOffset = ((want - now % 60) + 60) % 60;
+      timeOffset += ((want - now % 60) + 60) % 60;  // keeps any hour shift
     }
+    if (!(v = param(query, "hours")).empty()) timeOffset += atol(v.c_str()) * 3600;  // shift the clock by whole hours
     if (!(v = param(query, "resetTime")).empty()) timeOffset = 0;
     std::string j = stateJson();
     reply(fd, "application/json", j.data(), j.size());
@@ -215,6 +215,7 @@ static Face* pick(int i) {
     case 5: return faceChongqing();
     case 6: return faceHongKong();
     case 7: return faceShibuya();
+    case 8: return faceOrbit();
     default: return faceNetrunner();
   }
 }
