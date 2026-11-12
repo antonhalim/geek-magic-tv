@@ -46,6 +46,7 @@ Face* faceShibuya();
 Face* faceOrbit();
 Face* faceNeoLA();
 Face* faceAbyss();
+Face* faceMaglev();
 
 // ---- shared helpers (common.cpp) ----
 
