@@ -1,7 +1,7 @@
 # CYBERCLOCK
 
 Custom cyberpunk firmware for the **GeekMagic SmallTV Ultra**: an ESP8266 desk clock with a 240×240 screen.
-It replaces the stock firmware with twelve animated clock faces, live weather from Open-Meteo, night
+It replaces the stock firmware with thirteen animated clock faces, live weather from Open-Meteo, night
 dimming, and a web admin page. Flash it, and go back to stock, over Wi-Fi. No cable needed.
 
 ## Faces
@@ -20,6 +20,7 @@ dimming, and a web admin page. Flash it, and go back to stock, over Wi-Fi. No ca
 | <img src="docs/images/face-neo-la.png" alt="Neo LA face" width="160"> | **Neo LA** | Los Angeles on a smoggy night: searchlights over downtown, freeway traffic, palms, an ad blimp scrolling the temperature and time, a flickering motel sign and a taco truck with a late crowd. A flying car crosses at :15 and :45. Rain, snow, fog and lightning follow live weather. |
 | <img src="docs/images/face-abyss.png" alt="Abyss face" width="160"> | **Abyss** | The window of a sea-floor habitat. Light shafts from the surface follow the weather and the real day and night over your city, jellyfish glow brighter after dark, and a sub patrols with its headlight. A whale passes at the top of every minute. |
 | <img src="docs/images/face-maglev.png" alt="Maglev face" width="160"> | **Maglev** | The view from a train window as a city slides past in layers. It follows the weather and the real day and night over your city, with neon signs lit from dusk to dawn and rain or snow streaking across the glass. The train enters a tunnel at the top of every minute and another train passes at :30. |
+| <img src="docs/images/face-ocean-drive.png" alt="Ocean Drive face" width="160"> | **Ocean Drive** | A neon beachfront at the real time of day over your city: art-deco hotels behind a row of palms, with the ocean in front. The sun sets as a striped retro disc, the hotel signs light up from dusk to dawn and reflect in the water, and the palms bend in the wind. A car chase tears down the drive at the top of every minute, a helicopter sweeps its searchlight at :30, and a speedboat crosses at :15 and :45. The footer shows today's sunset time, or sunrise after dark. |
 
 Every face shows local time with seconds, the date and the current weather.
 Times shown before the clock has synced read `--:--`.
@@ -87,7 +88,7 @@ If a flash ever leaves the clock unable to boot, recovery needs a USB-serial ada
 | Method | Path | Notes |
 |---|---|---|
 | `GET` | `/api/config` | Current settings. |
-| `POST` | `/api/config` | JSON body with any of: `city`, `lat`, `lon`, `unit` (`"C"`/`"F"`), `face` (0 Netrunner, 1 Terminal, 2 Vitals, 3 Corpo, 4 Radar, 5 Chongqing, 6 Hong Kong, 7 Shibuya, 8 Orbit, 9 Neo LA, 10 Abyss, 11 Maglev), `brightness`, `nightOn`, `nightStart`, `nightEnd`, `nightBrightness`. Invalid values keep the current setting. |
+| `POST` | `/api/config` | JSON body with any of: `city`, `lat`, `lon`, `unit` (`"C"`/`"F"`), `face` (0 Netrunner, 1 Terminal, 2 Vitals, 3 Corpo, 4 Radar, 5 Chongqing, 6 Hong Kong, 7 Shibuya, 8 Orbit, 9 Neo LA, 10 Abyss, 11 Maglev, 12 Ocean Drive), `brightness`, `nightOn`, `nightStart`, `nightEnd`, `nightBrightness`. Invalid values keep the current setting. |
 | `GET` | `/api/geocode?q=Tokyo` | City search (up to 5 matches). |
 | `GET` | `/api/status` | IP, Wi-Fi signal, uptime, free memory, last weather. |
 
