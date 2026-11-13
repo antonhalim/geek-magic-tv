@@ -31,7 +31,7 @@ p{margin:8px 0 0;font-size:12px;color:#7aa}
 <div id="res"></div></section>
 <section><h2>Display</h2>
 <div class="k">Unit</div><div class="seg" id="unit"><button data-v="C">&deg;C</button><button data-v="F">&deg;F</button></div>
-<div class="k">Face</div><div class="seg" id="face"><button data-v="0">NETRUNNER</button><button data-v="1">TERMINAL</button><button data-v="2">VITALS</button><button data-v="3">CORPO</button><button data-v="4">RADAR</button><button data-v="5">CHONGQING</button><button data-v="6">HONG KONG</button><button data-v="7">SHIBUYA</button><button data-v="8">ORBIT</button><button data-v="9">NEO LA</button><button data-v="10">ABYSS</button><button data-v="11">MAGLEV</button></div>
+<div class="k">Face</div><div class="seg" id="face"><button data-v="0">NETRUNNER</button><button data-v="1">TERMINAL</button><button data-v="2">VITALS</button><button data-v="3">CORPO</button><button data-v="4">RADAR</button><button data-v="5">CHONGQING</button><button data-v="6">HONG KONG</button><button data-v="7">SHIBUYA</button><button data-v="8">ORBIT</button><button data-v="9">NEO LA</button><button data-v="10">ABYSS</button><button data-v="11">MAGLEV</button><button data-v="12">OCEAN DRIVE</button></div>
 <div class="k">Brightness <span class="v" id="bv"></span></div>
 <input type="range" id="br" min="0" max="100"></section>
 <section><h2>Night mode</h2>
