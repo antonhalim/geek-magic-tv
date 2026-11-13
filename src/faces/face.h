@@ -48,6 +48,7 @@ Face* faceNeoLA();
 Face* faceAbyss();
 Face* faceMaglev();
 Face* faceOceanDrive();
+Face* faceLaunchPad();
 
 // ---- shared helpers (common.cpp) ----
 

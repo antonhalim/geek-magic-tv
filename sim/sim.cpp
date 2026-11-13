@@ -220,6 +220,7 @@ static Face* pick(int i) {
     case 10: return faceAbyss();
     case 11: return faceMaglev();
     case 12: return faceOceanDrive();
+    case 13: return faceLaunchPad();
     default: return faceNetrunner();
   }
 }
