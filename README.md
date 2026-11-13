@@ -1,7 +1,7 @@
 # CYBERCLOCK
 
 Custom cyberpunk firmware for the **GeekMagic SmallTV Ultra**: an ESP8266 desk clock with a 240×240 screen.
-It replaces the stock firmware with thirteen animated clock faces, live weather from Open-Meteo, night
+It replaces the stock firmware with a set of animated clock faces, live weather from Open-Meteo, night
 dimming, and a web admin page. Flash it, and go back to stock, over Wi-Fi. No cable needed.
 
 ## Faces
