@@ -21,6 +21,7 @@ dimming, and a web admin page. Flash it, and go back to stock, over Wi-Fi. No ca
 | <img src="docs/images/face-abyss.png" alt="Abyss face" width="160"> | **Abyss** | The window of a sea-floor habitat. Light shafts from the surface follow the weather and the real day and night over your city, jellyfish glow brighter after dark, and a sub patrols with its headlight. A whale passes at the top of every minute. |
 | <img src="docs/images/face-maglev.png" alt="Maglev face" width="160"> | **Maglev** | The view from a train window as a city slides past in layers. It follows the weather and the real day and night over your city, with neon signs lit from dusk to dawn and rain or snow streaking across the glass. The train enters a tunnel at the top of every minute and another train passes at :30. |
 | <img src="docs/images/face-ocean-drive.png" alt="Ocean Drive face" width="160"> | **Ocean Drive** | A neon beachfront at the real time of day over your city: art-deco hotels behind a row of palms, with the ocean in front. The sun sets as a striped retro disc, the hotel signs light up from dusk to dawn and reflect in the water, and the palms bend in the wind. A car chase tears down the drive at the top of every minute, a helicopter sweeps its searchlight at :30, and a speedboat crosses at :15 and :45. The footer shows today's sunset time, or sunrise after dark. |
+| <img src="docs/images/face-skyport.png" alt="Skyport face" width="160"> | **Skyport** | A rooftop air-taxi port above your city at the real time of day, with the time in chamfered digits. An air taxi lands at the top of every minute and leaves at :48, cargo drones come and go, and the live wind blows the windsock and pushes the aircraft around. Storms and strong wind ground every flight. The footer shows the pad, the flight and its status. |
 
 Every face shows local time with seconds, the date and the current weather.
 Times shown before the clock has synced read `--:--`.
@@ -88,7 +89,7 @@ If a flash ever leaves the clock unable to boot, recovery needs a USB-serial ada
 | Method | Path | Notes |
 |---|---|---|
 | `GET` | `/api/config` | Current settings. |
-| `POST` | `/api/config` | JSON body with any of: `city`, `lat`, `lon`, `unit` (`"C"`/`"F"`), `face` (0 Netrunner, 1 Terminal, 2 Vitals, 3 Corpo, 4 Radar, 5 Chongqing, 6 Hong Kong, 7 Shibuya, 8 Orbit, 9 Neo LA, 10 Abyss, 11 Maglev, 12 Ocean Drive), `brightness`, `nightOn`, `nightStart`, `nightEnd`, `nightBrightness`. Invalid values keep the current setting. |
+| `POST` | `/api/config` | JSON body with any of: `city`, `lat`, `lon`, `unit` (`"C"`/`"F"`), `face` (0 Netrunner, 1 Terminal, 2 Vitals, 3 Corpo, 4 Radar, 5 Chongqing, 6 Hong Kong, 7 Shibuya, 8 Orbit, 9 Neo LA, 10 Abyss, 11 Maglev, 12 Ocean Drive, 13 Launch, 14 Skyport), `brightness`, `nightOn`, `nightStart`, `nightEnd`, `nightBrightness`. Invalid values keep the current setting. |
 | `GET` | `/api/geocode?q=Tokyo` | City search (up to 5 matches). |
 | `GET` | `/api/status` | IP, Wi-Fi signal, uptime, free memory, last weather. |
 
