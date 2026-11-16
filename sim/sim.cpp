@@ -102,8 +102,6 @@ static void setWeather(int code, float tempC) {
   bool wet = code >= 51;
   weather.precipProb = wet ? 80 : 5;
   weather.precipMm = wet ? 6.5f : 0;
-  weather.windKmh = 14;
-  weather.windDir = 135;
 }
 
 // ---- tiny HTTP server ----
@@ -171,6 +169,8 @@ static void handle(int fd) {
     if (!(v = param(query, "code")).empty()) code = atoi(v.c_str());
     if (!(v = param(query, "tempC")).empty()) temp = (float)atof(v.c_str());
     setWeather(code, temp);
+    if (!(v = param(query, "wind")).empty()) weather.windKmh = (float)atof(v.c_str());  // km/h
+    if (!(v = param(query, "windDir")).empty()) weather.windDir = atoi(v.c_str());  // degrees it blows from
     if (!(v = param(query, "second")).empty()) {  // jump so the clock reads this second
       long now = (long)sim_time(nullptr), want = atol(v.c_str());
       timeOffset += ((want - now % 60) + 60) % 60;  // keeps any hour shift
@@ -221,6 +221,7 @@ static Face* pick(int i) {
     case 11: return faceMaglev();
     case 12: return faceOceanDrive();
     case 13: return faceLaunchPad();
+    case 14: return faceSkyport();
     default: return faceNetrunner();
   }
 }
@@ -248,6 +249,8 @@ int main(int argc, char** argv) {
 
   settings = defaultSettings();
   setWeather(61, 12);
+  weather.windKmh = 14;
+  weather.windDir = 135;
   displayBegin();
 
   Face* face = nullptr;

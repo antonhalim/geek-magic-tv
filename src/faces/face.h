@@ -17,6 +17,7 @@ struct FaceState {
   const char* outlook;  // today's tag: STORM, SNOW, RAIN, DRY
   char precip[24];      // "58% TODAY // 0.29in"
   int windDir;          // degrees FROM, -1 if unknown
+  int windKmh;          // rounded, 0 if unknown
   char wind[24];        // "WIND SE 9mph"
   bool weatherValid;
   bool stale;
@@ -49,6 +50,7 @@ Face* faceAbyss();
 Face* faceMaglev();
 Face* faceOceanDrive();
 Face* faceLaunchPad();
+Face* faceSkyport();
 
 // ---- shared helpers (common.cpp) ----
 

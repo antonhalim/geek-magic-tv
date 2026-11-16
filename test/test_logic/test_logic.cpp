@@ -32,7 +32,7 @@ void test_parse_partial() {
 
 void test_parse_clamps() {
   Settings s;
-  TEST_ASSERT_TRUE(parseSettings("{\"brightness\":500,\"face\":14,\"unit\":\"K\"}", s));
+  TEST_ASSERT_TRUE(parseSettings("{\"brightness\":500,\"face\":15,\"unit\":\"K\"}", s));
   TEST_ASSERT_EQUAL_UINT8(100, s.brightness);
   TEST_ASSERT_EQUAL_UINT8(0, s.face);
   TEST_ASSERT_EQUAL_CHAR('F', s.unit);
@@ -135,6 +135,8 @@ void test_face_vitals() {
   TEST_ASSERT_TRUE(parseSettings("{\"face\":13}", s));
   TEST_ASSERT_EQUAL(13, s.face);  // launch
   TEST_ASSERT_TRUE(parseSettings("{\"face\":14}", s));
+  TEST_ASSERT_EQUAL(14, s.face);  // skyport
+  TEST_ASSERT_TRUE(parseSettings("{\"face\":15}", s));
   TEST_ASSERT_EQUAL(0, s.face);
 }
 
@@ -323,7 +325,7 @@ void test_parse_over_keeps_base() {
   base.face = 1;
   base.unit = 'C';
   Settings o;
-  TEST_ASSERT_TRUE(parseSettingsOver("{\"face\":14,\"unit\":\"K\"}", base, o));
+  TEST_ASSERT_TRUE(parseSettingsOver("{\"face\":15,\"unit\":\"K\"}", base, o));
   TEST_ASSERT_EQUAL_UINT8(1, o.face);
   TEST_ASSERT_EQUAL_CHAR('C', o.unit);
   TEST_ASSERT_TRUE(parseSettingsOver("{\"brightness\":500}", base, o));

@@ -33,6 +33,7 @@ void buildFaceState(FaceState& s) {
   s.outlook = weather.valid ? dayOutlook(weather.dayCode, weather.precipProb, weather.precipMm) : "----";
   formatPrecip(weather.valid ? weather.precipProb : -1, weather.precipMm, s.unit, s.precip, sizeof(s.precip));
   s.windDir = weather.valid ? weather.windDir : -1;
+  s.windKmh = weather.valid ? (int)lroundf(weather.windKmh) : 0;
   formatWind(weather.windKmh, s.windDir, s.unit, s.wind, sizeof(s.wind));
 }
 
